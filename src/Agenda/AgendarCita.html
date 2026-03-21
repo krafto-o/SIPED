@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Agendar Cita</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>Agendar Cita</h2>
+
+    <form>
+      <label for="fecha">Fecha:</label>
+      <input type="date" id="fecha" name="fecha" required>
+
+      <label for="hora">Hora:</label>
+      <input type="time" id="hora" name="hora" required>
+
+      <label for="motivo">Motivo:</label>
+      <textarea id="motivo" name="motivo" placeholder="Describe el motivo..."></textarea>
+
+      <label for="estado">Estado:</label>
+      <select id="estado" name="estado">
+        <option value="pendiente">Pendiente</option>
+        <option value="cancelada">Cancelada</option>
+        <option value="realizada">Realizada</option>
+      </select>
+
+      <button type="submit">Guardar Cita</button>
+    </form>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registro de Paciente</title>
+  <link rel="stylesheet" href="estilosP.css">
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>Registro de Paciente</h2>
+
+    <form>
+      <label for="nombre">Nombre:</label>
+      <input type="text" id="nombre" name="nombre" required>
+
+      <label for="apellido">Apellido:</label>
+      <input type="text" id="apellido" name="apellido" required>
+
+      <label for="Fecha de Nacimiento">Fecha de Nacimiento:</label>
+      <input type="date" id="fecha-nacimiento" name="fecha-nacimiento" required>
+
+      <label for="Sexo">Sexo:</label>
+      <select id="sexo" name="sexo" required>
+        <option value="masculino">Masculino</option>
+        <option value="femenino">Femenino</option>
+      </select>
+
+      <label for="Tipo de sangre">Tipo de sangre:</label>
+      <input type="text" id="tipo-sangre" name="tipo-sangre" required>
+
+      <label for="telefono">Teléfono:</label>
+      <input type="tel" id="telefono" name="telefono" required>
+
+      <label for="Tutor">Nombre del Tutor:</label>
+      <input type="text" id="tutor" name="tutor" required>
+
+      
+       <input type="text" placeholder="Buscar...">
+    <button>Buscar</button>
+      <button type="submit">Guardar Cita</button>
+    </form>
+  </div>
+
+</body>
+</html>
