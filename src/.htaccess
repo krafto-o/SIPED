@@ -1,0 +1,28 @@
+# ----------------------------------------------------------------------
+# Quitar la extensión .php de la URL
+# ----------------------------------------------------------------------
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+# ----------------------------------------------------------------------
+# Protecciones básicas
+# ----------------------------------------------------------------------
+
+Options -Indexes
+
+# Bloquear el acceso a archivos sensibles (logs, configuraciones, backups)
+<FilesMatch "\.(log|ini|swp|bak|sql)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+<Files .htaccess>
+    Order allow,deny
+    Deny from all
+</Files>
+
+Header set X-Frame-Options "SAMEORIGIN"
+Header set X-Content-Type-Options "nosniff"
