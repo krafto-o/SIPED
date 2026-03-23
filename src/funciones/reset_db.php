@@ -21,7 +21,7 @@ function resetearBaseDeDatos($db)
     }
 }
 
-// Conectar a la db
-//$db = conectar();
+//Conectar a la db
+$db = conectar();
 // Borrar las tablas
-//resetearBaseDeDatos($db);
+resetearBaseDeDatos($db);

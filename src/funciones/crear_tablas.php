@@ -2,7 +2,8 @@
 
 require_once 'Funciones_SQL.php';
 
-function crear_tablas($db) {
+function crear_tablas($db)
+{
         // Definición de tablas
         $queries = [
             "CREATE TABLE Medicamento (
@@ -32,7 +33,7 @@ function crear_tablas($db) {
                  Apellidos VARCHAR(45),
                  Telefono_clinica VARCHAR(15),
                  Correo VARCHAR(100),
-                 Turno VARCHAR(45),        
+                 Turno VARCHAR(45)      
             );",
             "CREATE TABLE Paciente (
                 Id_Paciente INTEGER PRIMARY KEY,
@@ -43,7 +44,7 @@ function crear_tablas($db) {
                 Tipo_Sangre VARCHAR(45),
                 Id_Tutor INTEGER,
                 Id_Enfermero INTEGER,
-                FOREIGN KEY (Id_Tutor) REFERENCES Tutor(Id_Tutor),
+                FOREIGN KEY (Id_Tutor) REFERENCES Tutor(Id_Tutor)
             );",
             "CREATE TABLE Citas (
                 Id_Citas INTEGER PRIMARY KEY,
@@ -92,15 +93,15 @@ function crear_tablas($db) {
 
         echo "<strong>¡Base de datos reconstruida con éxito!</strong>";
 
-    } catch (PDOException $e) {
-        $db->exec("SET FOREIGN_KEY_CHECKS = 1;"); // No olvidar reactivarlo si falla
-        registrarError("Error reseteando DB: " . $e->getMessage());
-        echo "Error fatal. Revisa el log.";
-    }
+        //catch (PDOException $e) {
+        //    $db->exec("SET FOREIGN_KEY_CHECKS = 1;"); // No olvidar reactivarlo si falla
+        //    registrarError("Error reseteando DB: " . $e->getMessage());
+        //    echo "Error fatal. Revisa el log.";
+        //}
 }
 
 
 // Conectar a la db
-//$db = conectar();
+$db = conectar();
 // Crear las tablas
-// crear_tablas($db)
+crear_tablas($db);
