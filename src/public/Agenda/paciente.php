@@ -1,5 +1,5 @@
 <?php
-require_once '../funciones/Funciones_SQL.php';
+require_once '../../funciones/Funciones_SQL.php';
 
 $mensaje = "";
 
