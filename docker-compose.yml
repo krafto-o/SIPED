@@ -6,6 +6,8 @@ services:
       - "80:80"
     volumes:
       - ./src:/var/www/html
+    environment:
+      - TZ=America/Mexico_City
     depends_on:
       - db
 
@@ -16,6 +18,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: siped
+      TZ: America/Mexico_City
     ports:
       - "3307:3306"
     volumes:
@@ -30,4 +33,3 @@ services:
 
 volumes:
   db_data:
-
