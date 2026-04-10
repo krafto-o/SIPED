@@ -46,6 +46,25 @@ function obtenerDatos(PDO $conexion, $tabla, $condicion = "1", $params = [])
 // $datos = obtenerDatos($db, 'usuarios', 'id = ? AND estado = ?', [1, 'activo']);
 }
 
+function obtenerDatoEspecifico(PDO $conexion, $columnas, $tabla, $condicion = "1", $params = [])
+{
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $tabla)) {
+        throw new Exception("Nombre de tabla no válido.");
+    }
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $columnas)) {
+        throw new Exception("Nombre de la columna no válido.");
+    }
+    try {
+        $sql = "SELECT $columnas FROM $tabla WHERE $condicion";
+        $stmt = $conexion->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (\PDOException $e) {
+        registrarError("Error en SELECT ($tabla): " . $e->getMessage());
+        return []; // Devuelve array vacío para que el frontend no falle
+    }
+}
+
 function insertarDatos(PDO $conexion, $tabla, $datos)
 {
     // 1. Extraer los nombres de las columnas (las llaves del array)
@@ -94,4 +113,16 @@ function actualizarDatos(PDO $conexion, $tabla, $datos, $condicion, $paramsCondi
     }
 // Ejemplo de uso:
 // actualizarDatos($db, 'usuarios', ['nombre' => 'Nuevo Nombre'], 'id = :id', ['id' => 5]);
+}
+
+function ejecutarConsulta(PDO $conexion, $sql, $params = [])
+{
+    try {
+        $stmt = $conexion->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (\PDOException $e) {
+        registrarError("Error en la consulta: " . $e->getMessage());
+        return [];
+    }
 }

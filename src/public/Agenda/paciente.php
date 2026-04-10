@@ -1,4 +1,5 @@
 <?php
+
 require_once '../../funciones/Funciones_SQL.php';
 
 $mensaje = "";
@@ -6,7 +7,7 @@ $mensaje = "";
 // 1. Se verifica si el formulario fue enviado
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $db = conectar();
-
+    $id_tutor_generado = "";
     // 2. RECIBIR Y LIMPIAR DATOS DEL TUTOR
     // Se limpian las variables que vienen del formulario
     $nombre_tutor = htmlspecialchars($_POST['nombre_tutor'] ?? '');
@@ -21,60 +22,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_nac = htmlspecialchars($_POST['fecha_nacimiento'] ?? '');
     $sexo = htmlspecialchars($_POST['sexo'] ?? '');
     $tipo_sangre = htmlspecialchars($_POST['tipo_sangre'] ?? '');
-    
     // 4. PREPARAR ARRAY DEL TUTOR (Las llaves deben coincidir con las columnas en SQL)
     $datosTutor = [
-        'Nombre' => $nombre_tutor,
-        'Apellidos' => $apellidos_tutor,
-        'Telefono' => $telefono_tutor,
-        'Direccion' => $direccion_tutor,
-        'Parentesco' => $parentesco
+        'nombre' => $nombre_tutor,
+        'apellidos' => $apellidos_tutor,
+        'telefono' => $telefono_tutor,
+        'direccion' => $direccion_tutor,
+        'parentesco' => $parentesco
     ];
     // 6. PREPARAR ARRAY DEL PACIENTE
     $datosPaciente = [
-        'Nombre' => $nombre_pac,
-        'Apellidos' => $apellidos_pac,
-        'Fecha_Nacimiento' => $fecha_nac,
-        'Sexo' => $sexo,
-        'Tipo_Sangre' => $tipo_sangre,
-        'Id_Tutor' => $id_tutor_generado, // Vinculamos al paciente con su tutor
+        'nombre' => $nombre_pac,
+        'apellidos' => $apellidos_pac,
+        'fecha_nacimiento' => $fecha_nac,
+        'sexo' => $sexo,
+        'tipo_sangre' => $tipo_sangre,
+        'id_tutor' => $id_tutor_generado, // Vinculamos al paciente con su tutor
     ];
- 
-
     // 1. INICIA LA TRANSACCIÓN
     $db->beginTransaction();
-
     try {
         // 2. Insertamos al Tutor
-        $insertoTutor = insertarDatos($db, 'Tutor', $datosTutor);
+        $insertoTutor = insertarDatos($db, 'tutor', $datosTutor);
 
         if (!$insertoTutor) {
             throw new Exception("Falló la inserción del Tutor.");
         }
-
         // Obtenemos el ID
         $id_tutor_generado = $db->lastInsertId();
-
         // 3. Preparamos y agregamos al Paciente
-        $datosPaciente['Id_Tutor'] = $id_tutor_generado; // Le pasamos el ID
-
-        $insertoPaciente = insertarDatos($db, 'Paciente', $datosPaciente);
-
+        $datosPaciente['id_tutor'] = $id_tutor_generado; // Le pasamos el ID
+        $insertoPaciente = insertarDatos($db, 'paciente', $datosPaciente);
         if (!$insertoPaciente) {
             throw new Exception("Falló la inserción del Paciente.");
         }
-
         // 4. Si no hubo ningun error se guarda la Transacción
         $db->commit();
         $mensaje = "<p style='color: green;'>¡Paciente y Tutor guardados con éxito!</p>";
-
     } catch (Exception $e) {
         // 5. Si algo fallo (Tutor o Paciente), Se cancela la Transacción
         $db->rollBack();
-        
         // Registramos en el log el error
         registrarError("Error en Transacción Registro: " . $e->getMessage());
-        
         $mensaje = "<p style='color: red;'>Ocurrió un error al guardar. Ningún dato fue registrado.</p>";
     }
 }

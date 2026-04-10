@@ -6,77 +6,62 @@ function crear_tablas($db)
 {
         // Definición de tablas
         $queries = [
-            "CREATE TABLE Medicamento (
-                  Id_Medicamento INTEGER PRIMARY KEY,
-                  Nombre TEXT,
-                  Descripcion VARCHAR(200),
-                  Cantidad INTEGER
+            "CREATE TABLE medico (
+                id_medico INTEGER PRIMARY KEY AUTO_INCREMENT,
+                nombre VARCHAR(45),
+                apellidos VARCHAR(45),
+                telefono VARCHAR(15),
+                correo VARCHAR(45)
             );",
-            "CREATE TABLE Doctor (
-                Id_Doctor INTEGER PRIMARY KEY,
-                Nombre VARCHAR(45),
-                Apellidos VARCHAR(45),
-                Telefono VARCHAR(15),
-                Correo VARCHAR(45)
+            "CREATE TABLE tutor (
+                id_tutor INTEGER PRIMARY KEY AUTO_INCREMENT,
+                nombre VARCHAR(45),
+                apellidos VARCHAR(45),
+                telefono VARCHAR(15),
+                correo VARCHAR(45),
+                direccion VARCHAR(45),
+                parentesco VARCHAR(45)
             );",
-            "CREATE TABLE Tutor (
-                Id_Tutor INTEGER PRIMARY KEY,
-                Nombre VARCHAR(45),
-                Apellidos VARCHAR(45),
-                Telefono VARCHAR(15),
-                Direccion VARCHAR(45),
-                Parentesco VARCHAR(45)
+            "CREATE TABLE recepcionista (
+                id_recepcionista INTEGER PRIMARY KEY AUTO_INCREMENT,
+                nombre VARCHAR(45),
+                apellidos VARCHAR(45),
+                telefono VARCHAR(15),
+                correo VARCHAR(100)
             );",
-            "CREATE TABLE Recepcionista (
-                Id_Recepcionista INT PRIMARY KEY,
-                 Nombre VARCHAR(45),
-                 Apellidos VARCHAR(45),
-                 Telefono_clinica VARCHAR(15),
-                 Correo VARCHAR(100),
-                 Turno VARCHAR(45)      
+            "CREATE TABLE paciente (
+                id_paciente INTEGER PRIMARY KEY AUTO_INCREMENT,
+                nombre VARCHAR(45),
+                apellidos VARCHAR(45),
+                fecha_nacimiento DATE,
+                sexo VARCHAR(45),
+                id_tutor INTEGER,
+                FOREIGN KEY (id_tutor) REFERENCES tutor(id_tutor)
             );",
-            "CREATE TABLE Paciente (
-                Id_Paciente INTEGER PRIMARY KEY,
-                Nombre VARCHAR(45),
-                Apellidos VARCHAR(45),
-                Fecha_Nacimiento DATE,
-                Sexo VARCHAR(45),
-                Tipo_Sangre VARCHAR(45),
-                Id_Tutor INTEGER,
-                Id_Enfermero INTEGER,
-                FOREIGN KEY (Id_Tutor) REFERENCES Tutor(Id_Tutor)
+            "CREATE TABLE citas (
+                id_cita INTEGER PRIMARY KEY AUTO_INCREMENT,
+                fecha_hora DATETIME,
+                motivo VARCHAR(45),
+                estado VARCHAR(45),
+                id_paciente INTEGER,
+                id_medico INTEGER,
+                FOREIGN KEY (id_paciente) REFERENCES paciente(id_paciente),
+                FOREIGN KEY (id_medico) REFERENCES medico(id_medico)
             );",
-            "CREATE TABLE Citas (
-                Id_Citas INTEGER PRIMARY KEY,
-                Fecha DATE,
-                Hora TIME,
-                Motivo VARCHAR(45),
-                Estado VARCHAR(45),
-                Id_Paciente INTEGER,
-                Id_Doctor INTEGER,
-                FOREIGN KEY (Id_Paciente) REFERENCES Paciente(Id_Paciente),
-                FOREIGN KEY (Id_Doctor) REFERENCES Doctor(Id_Doctor)
+            "CREATE TABLE historial_clinico (
+                id_historial INTEGER PRIMARY KEY AUTO_INCREMENT,
+                fecha_hora DATETIME,
+                observaciones VARCHAR(45),
+                id_paciente INTEGER,
+                FOREIGN KEY (id_paciente) REFERENCES paciente(id_paciente)
             );",
-            "CREATE TABLE Historial_Clinico (
-                Id_Historial INTEGER PRIMARY KEY,
-                Fecha DATE,
-                Observaciones VARCHAR(45),
-                Id_Paciente INTEGER,
-                FOREIGN KEY (Id_Paciente) REFERENCES Paciente(Id_Paciente)
-            );",
-            "CREATE TABLE Diagnostico (
-              Id_Diagnostico INTEGER PRIMARY KEY,
-                Descripcion VARCHAR(200),
-                Tratamiento VARCHAR(200),
-                Fecha DATE,
-                Id_Historial INTEGER,
-                FOREIGN KEY (Id_Historial) REFERENCES Historial_Clinico(Id_Historial)
-            );",
-            "CREATE TABLE Diagnostico_Medicamento (
-              Id_Diagnostico INTEGER,
-                Id_Medicamento INTEGER,
-                FOREIGN KEY (Id_Diagnostico) REFERENCES Diagnostico(Id_Diagnostico),
-                FOREIGN KEY (Id_Medicamento) REFERENCES Medicamento(Id_Medicamento)
+            "CREATE TABLE diagnostico (
+                id_diagnostico INTEGER PRIMARY KEY AUTO_INCREMENT,
+                descripcion VARCHAR(200),
+                tratamiento VARCHAR(200),
+                fecha_hora DATETIME,
+                id_historial INTEGER,
+                FOREIGN KEY (id_historial) REFERENCES historial_clinico(id_historial)
             );"
         ];
 
