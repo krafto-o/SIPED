@@ -114,19 +114,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
           <label for="sexo">Sexo:</label>
           <select id="sexo" name="sexo" required>
-            <option value="Masculino">Masculino</option>
-            <option value="Femenino">Femenino</option>
+          <option value="Masculino">Masculino</option>
+          <option value="Femenino">Femenino</option>
+          
           </select>
-
-          <label for="tipo_sangre">Tipo de sangre:</label>
-          <input type="text" id="tipo_sangre" name="tipo_sangre" required>
       </fieldset>
 
       <fieldset>
-          <legend>Datos del Tutor Responsable</legend>
+           <legend>Datos del Tutor Responsable</legend>
           
           <label for="nombre_tutor">Nombre del Tutor:</label>
-          <input type="text" id="nombre_tutor" name="nombre_tutor" required>
+          <input 
+             type="text" 
+             id="nombre_tutor" 
+            name="nombre_tutor" 
+            pattern="[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+"
+            maxlength="20"
+            title="Solo se permiten letras" required>
 
           <label for="apellidos_tutor">Apellidos del Tutor:</label>
           <input type="text" id="apellidos_tutor" name="apellidos_tutor" required>
@@ -134,13 +138,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <label for="telefono_tutor">Teléfono:</label>
           <input type="tel" id="telefono_tutor" name="telefono_tutor" required>
 
+          <label for="Correo Electronico_tutor">Correo Electrónico:</label>
+          <input type="email" id="Correo Electronico_tutor" name="Correo Electronico_tutor" required>
+
           <label for="direccion_tutor">Dirección:</label>
           <input type="text" id="direccion_tutor" name="direccion_tutor" required>
 
           <label for="parentesco">Parentesco (Ej. Madre, Padre, Abuelo):</label>
           <input type="text" id="parentesco" name="parentesco" required>
       </fieldset>
-
       <button type="submit">Guardar Registro Completo</button>
     </form>
   </div>
