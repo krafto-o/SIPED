@@ -2,3 +2,4 @@ src/test/
 src/logs/
 .php-cs-fixer.dist.php
 not_final_code_assistant/
+old_proyect/
