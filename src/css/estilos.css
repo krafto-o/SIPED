@@ -825,3 +825,115 @@ body {
 .form-input.input-error {
     border-color: var(--color-danger);
 }
+
+/* AJAX Search Results */
+.ajax-resultados {
+    position: absolute;
+    z-index: 100;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    max-height: 250px;
+    overflow-y: auto;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.ajax-resultado-item {
+    padding: var(--spacing-md);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color 0.15s;
+}
+
+.ajax-resultado-item:last-child {
+    border-bottom: none;
+}
+
+.ajax-resultado-item:hover {
+    background-color: var(--color-background);
+}
+
+/* Modal Large */
+.modal-lg {
+    max-width: 640px;
+}
+
+/* Cita Detalle */
+.cita-detalle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.cita-detalle-header h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+/* FullCalendar overrides */
+.fc {
+    font-family: var(--font-body);
+}
+
+.fc .fc-toolbar-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.fc .fc-button {
+    background-color: var(--color-primary);
+    border: none;
+    border-radius: var(--radius);
+    padding: var(--spacing-sm) var(--spacing-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.fc .fc-button:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.fc .fc-button-primary:not(:disabled):active,
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+    background-color: var(--color-primary-hover);
+}
+
+.fc .fc-daygrid-day.fc-day-today {
+    background-color: rgba(14, 165, 233, 0.05);
+}
+
+.fc .fc-timegrid-col.fc-day-today {
+    background-color: rgba(14, 165, 233, 0.05);
+}
+
+.fc .fc-event {
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 0.8125rem;
+    cursor: pointer;
+}
+
+.fc .fc-col-header-cell {
+    background-color: var(--color-background);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+.fc .fc-daygrid-day-number,
+.fc .fc-timegrid-slot-label {
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+}
+

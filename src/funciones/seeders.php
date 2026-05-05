@@ -41,7 +41,9 @@ function crear_seeders($db)
         ['clave' => 'costo_primera_vez', 'valor' => '700.00', 'descripcion' => 'Costo de primera consulta'],
         ['clave' => 'horario_inicio', 'valor' => '09:00', 'descripcion' => 'Hora de apertura del consultorio'],
         ['clave' => 'horario_fin', 'valor' => '18:00', 'descripcion' => 'Hora de cierre del consultorio'],
-        ['clave' => 'duracion_cita', 'valor' => '30', 'descripcion' => 'Duracion estandar de cita en minutos'],
+        ['clave' => 'duracion_cita', 'valor' => '30', 'descripcion' => 'Duracion estandar de cita en minutos (fallback)'],
+        ['clave' => 'duracion_primera_cita', 'valor' => '30', 'descripcion' => 'Duracion de cita de primera vez en minutos'],
+        ['clave' => 'duracion_cita_regular', 'valor' => '20', 'descripcion' => 'Duracion de cita consecuente en minutos'],
         ['clave' => 'timeout_sesion', 'valor' => '10', 'descripcion' => 'Minutos de inactividad antes de cerrar sesion']
     ];
 

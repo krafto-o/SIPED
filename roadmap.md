@@ -47,13 +47,13 @@ Este documento define la secuencia lógica de desarrollo para el Sistema Integra
 
 ## FASE 3: Gestión de Tiempos (Agenda y Citas)
 
-- [ ] **3.1. Calendario Interactivo (`/Agenda/index.php`)**
+- [x] **3.1. Calendario Interactivo (`/Agenda/index.php`)**
   - **Descripción:** Agenda principal.
   - **Implementación:** Integrar `FullCalendar.js`. Crear endpoint `/Agenda/api_citas.php` que retorne JSON.
-- [ ] **3.2. Agendar Nueva Cita (`/Agenda/crear.php`)**
+- [x] **3.2. Agendar Nueva Cita (`/Agenda/crear.php`)**
   - **Descripción:** Modal/Formulario de agendamiento.
   - **Implementación:** Leer tabla `configuracion` para sumar minutos según `tipo_cita`. Ejecutar validación Anti-Double Booking antes de insertar.
-- [ ] **3.3. Gestión de Estados (`/Agenda/gestionar.php`)**
+- [x] **3.3. Gestión de Estados (`/Agenda/gestionar.php`)**
   - **Descripción:** Modal para confirmar o cancelar citas.
   - **Implementación:** Petición AJAX/POST (Cero GET) para actualizar el `estado` de la cita.
 
