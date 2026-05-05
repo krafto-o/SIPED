@@ -5,37 +5,43 @@ Este documento define la secuencia lógica de desarrollo para el Sistema Integra
 
 ## FASE 0: Entorno y Testing
 
-- [ ] **0.1. Configuración de PHPUnit**
+- [X] **0.1. Configuración de PHPUnit**
   - **Descripción:** Instalar PHPUnit en el contenedor de desarrollo y configurar `phpunit.xml`.
   - **Implementación:** Crear `composer.json` para requerir `phpunit/phpunit` como dependencia de desarrollo. Configurar para que apunte a `/tests`.
-- [ ] **0.2. Pruebas Base del Core (Funciones_SQL)**
+- [X] **0.2. Pruebas Base del Core (Funciones_SQL)**
   - **Descripción:** Crear `FuncionesSQLTest.php` en `/tests/Integration`.
   - **Implementación:** Escribir pruebas para `obtenerDatos()`, `insertarDatos()` y `actualizarDatos()` validando la conexión a MariaDB y probando el CRUD bajo transacciones con `rollBack()`.
 
 ## FASE 1: Fundación y Seguridad (Autenticación)
 
-- [ ] **1.1. Seeders (Datos de prueba iniciales)**
+- [X] **1.1. Seeders (Datos de prueba iniciales)**
   - **Descripción:** Script para poblar las tablas base.
   - **Implementación:** Insertar un Pediatra y Recepcionista en `usuarios` (usando `password_hash()`), datos en `configuracion` (tiempos de consulta), y catálogo en `vacunas_catalogo`.
-- [ ] **1.2. Sistema de Login (`/public/login.php`)**
+- [X] **1.2. Sistema de Login (`/public/login.php`)**
   - **Descripción:** Interfaz de inicio de sesión dual (correo o teléfono) y modal de errores.
   - **Implementación:** Formulario POST. Validar con `obtenerDatos()`. Usar `password_verify()`. Iniciar `$_SESSION` con `id_usuario`, `rol` y `ultimo_acceso`.
-- [ ] **1.3. Middleware de Autenticación (`/funciones/auth.php`)**
+- [X] **1.3. Middleware de Autenticación (`/funciones/auth.php`)**
   - **Descripción:** Protección de rutas y timeout.
   - **Implementación:** Verificar que exista sesión y que la inactividad no exceda 10 minutos. Crear función `requerirRol()`.
+- [X] **1.4. Dashboard Pediatra (`/Dashboard/pediatra.php`)**
+  - **Descripción:** Panel principal del pediatra con citas del día y búsqueda de pacientes.
+  - **Implementación:** Botones rápidos, lista de citas hoy con botón "Atender" por POST, barra de búsqueda para atención sin cita.
+- [X] **1.5. Vista Agenda Recepcionista (`/Agenda/index.php`)**
+  - **Descripción:** Vista preliminar de citas del día para recepcionista.
+  - **Implementación:** Tabla con citas del día (placeholder hasta Fase 3 con FullCalendar). Protegido por `requerirRol()`.
 
 ## FASE 2: Gestión Central (Tutores y Pacientes)
 
-- [ ] **2.1. Registro Dual de Pacientes y Tutores (`/Pacientes/nuevo.php`)**
+- [X] **2.1. Registro Dual de Pacientes y Tutores (`/Pacientes/nuevo.php`)**
   - **Descripción:** Registrar paciente y vincular `N` tutores.
   - **Implementación:** Transacción PDO. Validar duplicados. Insertar paciente, tutor (si es nuevo), y la relación en la tabla pivote `paciente_tutor`.
-- [ ] **2.2. Listado y Búsqueda (`/Pacientes/index.php`)**
+- [X] **2.2. Listado y Búsqueda (`/Pacientes/index.php`)**
   - **Descripción:** Listado y buscador de pacientes.
   - **Implementación:** Búsqueda `LIKE` en BD asegurando filtrar solo `WHERE estado = 'activo'`.
-- [ ] **2.3. Perfil del Paciente (`/Pacientes/perfil.php`)**
+- [X] **2.3. Perfil del Paciente (`/Pacientes/perfil.php`)**
   - **Descripción:** Vista "Hub". Acceso mediante POST (Cero GET).
   - **Implementación:** Calcular edad en años/meses. Restringir pestañas de Historial y Alergias solo al rol Pediatra.
-- [ ] **2.4. Edición y Baja Lógica (`/Pacientes/editar.php`)**
+- [X] **2.4. Edición y Baja Lógica (`/Pacientes/editar.php`)**
   - **Descripción:** Actualizar datos o dar de baja.
   - **Implementación:** Actualizar `estado = 'inactivo'` en lugar de sentencias DELETE. Edición de pivote `paciente_tutor`.
 
