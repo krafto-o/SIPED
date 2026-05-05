@@ -93,7 +93,11 @@ function insertarDatos(PDO $conexion, $tabla, $datos)
 function actualizarDatos(PDO $conexion, $tabla, $datos, $condicion, $paramsCondicion = [])
 {
     // Construye la parte "SET columna1 = :columna1, columna2 = :columna2"
-    $sets = array_map(fn($col) => "$col = :$col", array_keys($datos));
+    $sets = array_map(fn($col) => "$col = :set_$col", array_keys($datos));
+    $datosRenombrados = [];
+    foreach ($datos as $col => $valor) {
+        $datosRenombrados["set_$col"] = $valor;
+    }
     $sql = sprintf(
         "UPDATE %s SET %s WHERE %s",
         $tabla,
@@ -103,9 +107,7 @@ function actualizarDatos(PDO $conexion, $tabla, $datos, $condicion, $paramsCondi
 
     try {
         $stmt = $conexion->prepare($sql);
-        // Combinamos los datos a actualizar con los parámetros de la condición (WHERE)
-        // Por ejemplo si actualizas nombre y el WHERE es id = ?, unimos ambos arrays.
-        $todosLosParams = array_merge($datos, $paramsCondicion);
+        $todosLosParams = array_merge($datosRenombrados, $paramsCondicion);
         return $stmt->execute($todosLosParams);
     } catch (\PDOException $e) {
         registrarError("Error en UPDATE ($tabla): " . $e->getMessage());

@@ -7,7 +7,7 @@ function resetearBaseDeDatos($db)
     // 1. Desactivar revisión de llaves foráneas para poder borrar tablas en cualquier orden
     $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
     // 2. Lista de tablas a eliminar
-    $tablas = ['medico', 'tutor', 'recepcionista', 'paciente','citas','historial_clinico','diagnostico'];
+    $tablas = ['pagos', 'vacunas_aplicadas', 'vacunas_catalogo', 'archivos_adjuntos', 'tratamientos', 'consultas', 'borradores_consultas', 'citas', 'paciente_tutor', 'paciente', 'tutor', 'configuracion', 'usuarios'];
     try {
         echo "Iniciando limpieza...<br>";
         foreach ($tablas as $tabla) {
