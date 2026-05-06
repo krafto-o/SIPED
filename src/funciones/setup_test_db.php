@@ -1,13 +1,12 @@
 <?php
 
-require_once 'Funciones_SQL.php';
+require_once __DIR__ . '/Funciones_SQL.php';
+require_once __DIR__ . '/seeders.php';
 
-function crear_tablas($db)
+function crear_tablas_test($db)
 {
-    // Desactivar llaves foráneas para poder recrear tablas
     $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
 
-    // Opcional pero recomendado: Limpiar las tablas existentes para evitar errores al recrearlas
     $tablas = ['usuarios', 'configuracion', 'tutor', 'paciente', 'paciente_tutor', 'citas', 'borradores_consultas', 'consultas', 'tratamientos', 'archivos_adjuntos', 'vacunas_catalogo', 'vacunas_aplicadas', 'pagos'];
     foreach ($tablas as $tabla) {
         $db->exec("DROP TABLE IF EXISTS $tabla;");
@@ -144,21 +143,53 @@ function crear_tablas($db)
         );"
     ];
 
-    try {
-        foreach ($queries as $sql) {
-            $db->exec($sql);
-        }
-        $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
-        echo "<strong style='color:green;'>¡Base de datos construida con la nueva arquitectura SIPED!</strong>";
-    } catch (PDOException $e) {
-        $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
-        // Asegúrate de que registrarError() esté disponible o cambiar por error_log()
-        error_log("Error creando DB: " . $e->getMessage());
-        echo "<strong style='color:red;'>Error fatal. Revisa el archivo de logs. " . $e->getMessage() . "</strong>";
+    foreach ($queries as $sql) {
+        $db->exec($sql);
     }
+
+    $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
 }
 
-// Conectar a la db
+function crear_bd_pruebas($db)
+{
+    $db->exec("USE siped_test;");
+
+    crear_tablas_test($db);
+    seeders_base($db);
+
+    // Datos minimos para tests: 1 paciente, 1 tutor, 1 cita
+    insertarDatos($db, 'paciente', [
+        'nombre' => 'PacientePrueba',
+        'apellidos' => 'Test',
+        'fecha_nacimiento' => '2020-01-01',
+        'sexo' => 'masculino',
+        'estado' => 'activo'
+    ]);
+
+    insertarDatos($db, 'tutor', [
+        'nombre' => 'TutorPrueba',
+        'apellidos' => 'Test',
+        'telefono' => '5550001111',
+        'estado' => 'activo'
+    ]);
+
+    echo "Base de datos de pruebas 'siped_test' creada exitosamente.\n";
+    echo "- 13 tablas creadas\n";
+    echo "- 2 usuarios seed (pediatra, recepcionista)\n";
+    echo "- 9 variables de configuracion\n";
+    echo "- 14 vacunas en catalogo\n";
+    echo "- 1 paciente y 1 tutor de prueba\n";
+}
+
+// Crear BD de pruebas (siempre limpia)
+$dbSinBD = conectarSinBD();
+$dbSinBD->exec("DROP DATABASE IF EXISTS siped_test;");
+$dbSinBD->exec("CREATE DATABASE siped_test CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;");
+
+// Definir modo prueba para que conectar() use siped_test
+if (!defined('MODO_PRUEBA')) {
+    define('MODO_PRUEBA', true);
+}
+
 $db = conectar();
-// Crear las tablas
-crear_tablas($db);
+crear_bd_pruebas($db);

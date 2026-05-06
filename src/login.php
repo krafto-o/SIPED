@@ -52,16 +52,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if (isset($_GET['error'])) {
     match ($_GET['error']) {
         'timeout' => [
-            $errorMensaje => 'Tu sesión ha expirado por inactividad. Inicia sesión nuevamente.',
-            $errorTipo => 'warning'
+            $errorMensaje = 'Tu sesión ha expirado por inactividad. Inicia sesión nuevamente.',
+            $errorTipo = 'warning'
         ],
         'no_autenticado' => [
-            $errorMensaje => 'Debes iniciar sesión para acceder.',
-            $errorTipo => 'warning'
+            $errorMensaje = 'Debes iniciar sesión para acceder.',
+            $errorTipo = 'warning'
         ],
         'rol_no_autorizado' => [
-            $errorMensaje => 'No tienes permisos para acceder a esta sección.',
-            $errorTipo => 'error'
+            $errorMensaje = 'No tienes permisos para acceder a esta sección.',
+            $errorTipo = 'error'
         ],
         default => []
     };

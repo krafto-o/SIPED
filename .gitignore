@@ -7,3 +7,4 @@ src/vendor/
 src/composer.lock
 src/.phpunit.cache/
 composer.phar
+src/.php-cs-fixer.cache

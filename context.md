@@ -1,4 +1,4 @@
-# Contexto del Proyecto SIPED - Fases 0, 1, 2 y 3 Completadas
+# Contexto del Proyecto SIPED - Fases 0, 1, 2, 3 y 4 Completadas
 
 ## Documentos de Referencia Utilizados
 
@@ -13,12 +13,15 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | `spec_fase1.md` | Especificaciones de autenticacion y aterrizaje por rol |
 | `spec_fase2.md` | Especificaciones de pacientes, tutores, perfil Hub y permisos |
 | `spec_fase3.md` | Especificaciones de agenda, citas, FullCalendar, anti-double booking y gestion de estados |
+| `spec_fase4.md` | Especificaciones de consultas, borradores, recetas PDF y archivos adjuntos |
 
 ## Fases Completadas
 
 ### FASE 0: Entorno y Testing
 - Configuracion de PHPUnit y pruebas de `Funciones_SQL.php`
 - Seeders con usuarios, configuracion y vacunas
+- BD separada `siped_test` para tests aislada de BD de desarrollo `siped`
+- Constante `MODO_PRUEBA` en `phpunit.xml` para detectar modo test automaticamente
 
 ### FASE 1: Fundacion y Seguridad (Autenticacion)
 - Sistema de login dual (correo o telefono) con `password_verify()`
@@ -50,6 +53,20 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 - Filtrado por rol: pediatra solo ve sus citas, recepcionista ve todas
 - 17 tests de integracion para modulo de citas
 
+### FASE 4: Operacion Medica (Consultas e Historial)
+- Formulario de consulta segmentado: datos clinicos, historial previo (acordeon), consulta actual, laboratorio, diagnostico, tratamientos
+- Autoguardado de borradores cada 30s + debounce (1s) via POST a `api_borrador.php`
+- Restauracion de borrador con modal de confirmacion al entrar
+- Lista dinamica de tratamientos con JS vanilla (inyeccion de bloques HTML)
+- Transaccion PDO al finalizar: inserta `consultas`, itera `tratamientos`, elimina borrador, cita → `realizada`
+- **Generacion de receta PDF modular**: Plantilla HTML/CSS separada (`src/plantillas/receta/default.php`), funcion `renderizarPlantilla()` con `extract()` para inyeccion de variables. Variables estructuradas como arrays (`$signos_vitales`, `$tratamientos`) para flexibilidad.
+- Subida segura de archivos (PDF/JPG/PNG, max 5MB): flujo de dos pasos (temporal antes de finalizar, registro en BD durante transaccion, movimiento a directorio final solo tras commit exitoso)
+- Servicio de archivos con validacion de sesion (`ver_archivo.php`)
+- Limpieza automatica de recetas > 7 dias y archivos temporales > 24 horas
+- Historial clinico en perfil del paciente: pestana con consultas pasadas, boton "Descargar Receta" (usa `obtenerOGenerarReceta()` → `generarRecetaPDF()`)
+- Endpoint `api_receta.php` para descarga de recetas existentes o generacion on-demand
+- 15 tests de integracion para modulo de consultas
+
 ---
 
 ## Archivos Creados
@@ -75,17 +92,47 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | `src/Agenda/api_detalle_cita.php` | 3 | Endpoint POST para detalle de cita (paciente + tutores) |
 | `src/Agenda/gestionar_cita.php` | 3 | Handler POST para confirmar/cancelar citas con redirect |
 | `src/Agenda/crear.php` | 3 | Formulario agendar cita con buscador AJAX vanilla JS |
+| `src/funciones/consultas.php` | 4 | 11 funciones: `obtenerDatosConsulta()`, `obtenerHistorialPaciente()`, `guardarBorrador()`, `obtenerBorrador()`, `eliminarBorrador()`, `finalizarConsulta()`, `guardarArchivoTemporal()`, `registrarArchivosAdjuntos()`, `limpiarRecetasViejas()`, `limpiarArchivosTemporales()`, `generarRecetaPDF()`, `renderizarPlantilla()` |
+| `src/Consultas/iniciar.php` | 4 | Vista principal de consulta con formulario segmentado, historial acordeon, tratamientos dinamicos, autoguardado JS |
+| `src/Consultas/api_borrador.php` | 4 | Endpoint POST para autoguardado de borradores (JSON) con validacion de propiedad de cita |
+| `src/Consultas/api_finalizar.php` | 4 | Endpoint POST para finalizar consulta + generar receta PDF |
+| `src/Consultas/api_subir_archivo.php` | 4 | Endpoint POST para subir archivos de laboratorio |
+| `src/Consultas/api_receta.php` | 4 | Endpoint POST para obtener receta existente o generarla on-demand |
+| `src/Consultas/ver_archivo.php` | 4 | Servir archivos con validacion de sesion y path traversal protection |
+| `src/plantillas/receta/default.php` | 4 | Plantilla HTML/CSS pura para PDF de receta (variables via `extract()`) |
+| `src/tests/Integration/ConsultasTest.php` | 4 | 15 pruebas de consultas (borradores, finalizar, historial, edad, limpieza) |
+| `storage/recetas_temporales/.htaccess` | 4 | Proteccion de acceso directo a recetas |
+| `storage/pacientes/.htaccess` | 4 | Proteccion de acceso directo a archivos de pacientes |
+| `storage/pacientes/temp/.htaccess` | 4 | Proteccion de acceso directo a archivos temporales |
+| `src/funciones/instalar.php` | 0 | Script maestro de instalacion: crea BD, 13 tablas, seeders base y datos de prueba funcionales |
+| `src/funciones/setup_test_db.php` | 0 | Script para crear BD `siped_test` limpia para PHPUnit |
 
 ## Archivos Modificados
 
 | Archivo | Cambio |
 |---|---|
 | `Dockerfile` | Habilitado `mod_headers` para `.htaccess` |
-| `src/phpunit.xml` | Agregado testsuite `Integration` |
+| `src/phpunit.xml` | Agregado testsuite `Integration` + constante `MODO_PRUEBA` para BD aislada |
 | `src/Agenda/index.php` | Reemplazada tabla placeholder por FullCalendar.js + modal detalle + persistencia de vista en localStorage |
-| `src/css/estilos.css` | +115 lineas: estilos AJAX search, modal-lg, cita-detalle, overrides FullCalendar |
-| `src/funciones/seeders.php` | Agregados `duracion_primera_cita` (30 min) y `duracion_cita_regular` (20 min) |
-| `roadmap.md` | Marcadas tareas Fase 1 (1.1-1.5), Fase 2 (2.1-2.4) y Fase 3 (3.1-3.3) como completadas |
+| `src/css/estilos.css` | +270 lineas: estilos AJAX search, modal-lg, cita-detalle, overrides FullCalendar, modulo consultas completo |
+| `src/funciones/Funciones_SQL.php` | Funciones envueltas en `if (!function_exists())`; agregada `eliminarRegistro()`; agregada `conectarSinBD()` para crear BDs sin especificar database; `conectar()` detecta `MODO_PRUEBA` y usa `siped_test` |
+| `src/funciones/seeders.php` | Refactorizada como funcion reutilizable `seeders_base()` importada por `instalar.php` y `setup_test_db.php` |
+| `src/funciones/citas.php` | Agregado `'realizada'` a estados validos en `cambiarEstadoCita()` |
+| `src/funciones/pacientes.php` | `desvincularTutor()` usa `eliminarRegistro()` en vez de PDO crudo; `obtenerPacienteCompleto()` filtra por `estado = 'activo'` |
+| `src/funciones/consultas.php` | Flujo de archivos en dos pasos (temporal → final dentro de transaccion); `eliminarBorrador()` y `generarRecetaPDF()` dentro de transaccion; `registrarArchivosAdjuntos()` recibe `idCita` para obtener `id_paciente`; `limpiarArchivosTemporales()` para limpieza de huerfanos |
+| `src/Consultas/api_borrador.php` | Agregada validacion de propiedad de cita con `obtenerDatosConsulta()` |
+| `src/Consultas/api_finalizar.php` | Borrador y receta generados dentro de transaccion via parametros de `finalizarConsulta()` |
+| `src/.htaccess` | Agregados headers `X-XSS-Protection` y `Referrer-Policy` |
+| `src/login.php` | Corregido bug: `match` usaba `=>` (array key) en vez de `=` (asignacion) para mensajes de error |
+| `src/Pacientes/perfil.php` | Agregada pestana "Historial Clinico" con listado de consultas pasadas y boton "Descargar Receta" |
+| `roadmap.md` | Marcadas tareas Fase 1 (1.1-1.5), Fase 2 (2.1-2.4), Fase 3 (3.1-3.3) y Fase 4 (4.1-4.3) como completadas |
+
+## Archivos Eliminados
+
+| Archivo | Motivo |
+|---|---|
+| `src/funciones/crear_tablas.php` | Fusionado en `instalar.php` |
+| `src/funciones/reset_db.php` | Fusionado en `instalar.php` |
 
 ## Bugs Corregidos
 
@@ -96,6 +143,20 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 5. **Modal detalle cita - URL incorrecta**: El fetch apuntaba a `/Agenda/api_detalle` pero el archivo es `api_detalle_cita.php`. Solucion: corregir URL en index.php.
 6. **Boton confirmar cita - "datos incompletos"**: El input hidden `accion` nunca recibia su valor. Solucion: agregar `document.getElementById('modalAccion').value = 'confirmar'` al abrir modal.
 7. **Calendario perdia vista al recargar**: Tras confirmar/cancelar cita, el redirect recargaba siempre en `timeGridWeek`. Solucion: persistir vista y fecha en localStorage con callback `datesSet` de FullCalendar.
+8. **Columna `fecha_creacion` inexistente en `consultas`**: Las queries usaban `c.fecha_creacion` pero la columna es `c.fecha_hora` (heredada de `citas`). Solucion: cambiar todas las referencias a `c.fecha_hora`.
+9. **`obtenerHistorialPaciente()` columnas faltantes**: No incluia `perimetro_cefalico`, `temperatura`, `frec_cardiaca`, `frec_respiratoria`. El perfil del paciente generaba warnings al acceder a indices inexistentes. Solucion: agregar columnas al SELECT.
+10. **`cambiarEstadoCita()` rechazaba 'realizada'**: El estado 'realizada' no estaba en el array de estados validos. Solucion: agregarlo junto a 'pendiente', 'confirmada', 'cancelada'.
+11. **Campos decimales con string vacio causaban error**: Si un signo vital no se llenaba, se enviaba `""` que MariaDB rechazaba para columnas `DECIMAL`. Solucion: convertir `""` a `null` antes de insertar.
+12. **`Cannot redeclare registrarError()` y otras funciones**: Composer autoload carga `Funciones_SQL.php` automaticamente, y cuando DomPDF incluye `vendor/autoload.php` dentro de `generarRecetaPDF()`, las funciones se redeclaraban. Solucion: envolver todas las funciones en `if (!function_exists('...'))`.
+13. **`calcularEdad()` no importada en `consultas.php`**: La funcion `generarRecetaPDF()` llamaba `calcularEdad()` sin haber hecho `require_once '../funciones/pacientes.php'`. Solucion: agregar import al inicio del archivo.
+14. **Archivos adjuntos se perdian si la consulta fallaba**: Los archivos se subian directamente al directorio final antes de la transaccion. Solucion: flujo de dos pasos - subir a temporal antes de finalizar, registrar en BD durante la transaccion, mover a directorio final solo si el commit es exitoso.
+15. **`desvincularTutor()` usaba PDO crudo**: Violaba regla de `agents.md`. Solucion: reemplazar por `eliminarRegistro()`.
+16. **`obtenerPacienteCompleto()` no filtraba por estado**: Inconsistencia con `obtenerPacienteConTutores()`. Solucion: agregar `AND estado = 'activo'`.
+17. **`api_borrador.php` sin validacion de propiedad**: Cualquier pediatra podia sobrescribir borrador de otro. Solucion: agregar `obtenerDatosConsulta()` para validar `id_usuario`.
+18. **`login.php` mensajes de error nunca se mostraban**: `match` usaba `=>` (sintaxis de array key) en vez de `=` (asignacion). Solucion: corregir a asignacion.
+19. **Tests contaminaban BD de desarrollo**: Las pruebas compartian BD con datos manuales. Solucion: BD separada `siped_test` con constante `MODO_PRUEBA`.
+20. **`testListadoSoloPacientesActivos` fallaba por datos residuales**: Esperaba 1 paciente pero habia 44. Solucion: usar sufijo `uniqid()` para nombres unicos.
+21. **Tests UTF-8 fallaban por encoding**: `assertStringContainsString('anio')` no encontraba `'año'`. Solucion: usar caracteres UTF-8 reales en assertions.
 
 ## Estado del Entorno
 
@@ -105,8 +166,20 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | PHP | 8.3.30 en contenedor |
 | MariaDB | 10.11 |
 | Composer | Instalado, dependencias: DomPDF v3.1.5, PHPUnit v11.5.55 |
-| PHPUnit | 64 tests pasando, 146 assertions, 0 fallos |
-| Base de datos | 13 tablas creadas, seeders aplicados (incluye duracion_primera_cita y duracion_cita_regular) |
+| PHPUnit | **61 tests pasando, 150 assertions, 0 fallos** |
+| BD desarrollo (`siped`) | 13 tablas + seeders base + datos de prueba funcionales (3 pacientes, 4 tutores, 5 citas, 1 consulta realizada) |
+| BD tests (`siped_test`) | 13 tablas + seeders base + datos minimos para tests (1 paciente, 1 tutor) |
+
+## Instalacion desde Cero
+
+Para una instalacion limpia del contenedor:
+
+```bash
+docker exec siped_web php /var/www/html/funciones/instalar.php
+docker exec siped_web php /var/www/html/funciones/setup_test_db.php
+```
+
+Esto crea ambas BDs (`siped` y `siped_test`) con tablas, seeders y datos de prueba funcionales.
 
 ## Usuarios de Prueba (Seeders)
 
@@ -131,6 +204,12 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | `/Pacientes/nuevo` | 302 → login | 200 | 200 |
 | `/Pacientes/perfil` | 302 → login | 200 (acceso POST) | 200 (acceso POST) |
 | `/Pacientes/editar` | 302 → login | 200 (acceso POST) | 200 (acceso POST) |
+| `/Consultas/iniciar` | 302 → login | 200 (acceso POST) | 302 → login |
+| `/Consultas/api_borrador` | 302 → login | 200 (POST) | 302 → login |
+| `/Consultas/api_finalizar` | 302 → login | 200 (POST) | 302 → login |
+| `/Consultas/api_subir_archivo` | 302 → login | 200 (POST) | 302 → login |
+| `/Consultas/api_receta` | 302 → login | 200 (POST) | 302 → login |
+| `/Consultas/ver_archivo` | 302 → login | 200 (GET con ruta) | 302 → login |
 
 ## Reglas Implementadas
 
@@ -138,14 +217,18 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 - **Bajas logicas**: Nunca se usa `DELETE` para registros principales, siempre `estado = 'inactivo'`
 - **WHERE estado = 'activo'**: Todas las consultas SELECT filtran por estado activo
 - **Transacciones PDO**: Operaciones multi-tabla usan `beginTransaction()` / `commit()` / `rollBack()`
-- **Sin PDO crudo**: Solo se usan las funciones de `Funciones_SQL.php` en vistas/controladores
+- **Sin PDO crudo**: Solo se usan las funciones de `Funciones_SQL.php` en vistas/controladores (incluye `eliminarRegistro()`)
 - **Nomenclatura**: PHP `camelCase`, BD `snake_case`, todo en espanol
 - **Vanilla JS**: Cero dependencias externas en frontend (sin jQuery), debouncing en inputs de busqueda
+- **Plantillas modulares**: PDFs usan `src/plantillas/{tipo}/default.php` con `renderizarPlantilla()` + `extract()`. La logica PHP prepara datos, la plantilla solo presenta.
+- **Funciones protegidas contra redeclaracion**: Todas las funciones en `Funciones_SQL.php` envueltas en `if (!function_exists())` para evitar conflictos con Composer autoload.
+- **Campos decimales null-safe**: Strings vacios se convierten a `null` antes de insertar en columnas `DECIMAL`.
+- **Archivos adjuntos en dos pasos**: Subida a `temp/{id_cita}/` antes de finalizar, registro en BD durante transaccion, movimiento a `pacientes/{id_paciente}/` solo tras commit exitoso.
+- **BD aislada para tests**: Constante `MODO_PRUEBA` en `phpunit.xml` hace que `conectar()` use `siped_test` en lugar de `siped`.
+- **Headers de seguridad**: `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`.
 
-## Proximo Paso: Fase 4
+## Proximo Paso: Fase 5
 
-Segun `roadmap.md` y `spec_fase4.md` (por crear), la Fase 4 incluye:
-- 4.1 Iniciar consulta con borradores autoguardados (`borradores_consultas`)
-- 4.2 Finalizar consulta y generar receta PDF con DomPDF
-- 4.3 Subida segura de archivos adjuntos (estudios de laboratorio)
-- Cambio automatico de cita a `realizada` al finalizar consulta
+Segun `roadmap.md`, la Fase 5 incluye:
+- 5.1 Cartilla digital de vacunas y alertas de vacunas atrasadas (`vacunas_catalogo`, `vacunas_aplicadas`)
+- 5.2 Aplicacion de vacunas con checkbox `aplicada_externamente`

@@ -1,40 +1,31 @@
 <?php
 
-require_once 'Funciones_SQL.php';
+require_once __DIR__ . '/Funciones_SQL.php';
 
-function crear_seeders($db)
+function seeders_base($db)
 {
-    $db->exec("SET FOREIGN_KEY_CHECKS = 0;");
-
-    // Usuarios de prueba (password: siped123)
     $hash = password_hash('siped123', PASSWORD_DEFAULT);
 
-    $usuarios = [
-        [
-            'nombre' => 'Carlos',
-            'apellidos' => 'Ramirez Lopez',
-            'correo' => 'pediatra@siped.com',
-            'telefono' => '5551234567',
-            'password' => $hash,
-            'rol' => 'pediatra',
-            'estado' => 'activo'
-        ],
-        [
-            'nombre' => 'Maria',
-            'apellidos' => 'Fernandez Torres',
-            'correo' => 'recepcion@siped.com',
-            'telefono' => '5559876543',
-            'password' => $hash,
-            'rol' => 'recepcionista',
-            'estado' => 'activo'
-        ]
-    ];
+    insertarDatos($db, 'usuarios', [
+        'nombre' => 'Carlos',
+        'apellidos' => 'Ramirez Lopez',
+        'correo' => 'pediatra@siped.com',
+        'telefono' => '5551234567',
+        'password' => $hash,
+        'rol' => 'pediatra',
+        'estado' => 'activo'
+    ]);
 
-    foreach ($usuarios as $usuario) {
-        insertarDatos($db, 'usuarios', $usuario);
-    }
+    insertarDatos($db, 'usuarios', [
+        'nombre' => 'Maria',
+        'apellidos' => 'Fernandez Torres',
+        'correo' => 'recepcion@siped.com',
+        'telefono' => '5559876543',
+        'password' => $hash,
+        'rol' => 'recepcionista',
+        'estado' => 'activo'
+    ]);
 
-    // Configuracion
     $config = [
         ['clave' => 'consultorio_nombre', 'valor' => 'Consultorio Pediatrico SIPED', 'descripcion' => 'Nombre del consultorio'],
         ['clave' => 'costo_consulta', 'valor' => '500.00', 'descripcion' => 'Costo estandar de consulta general'],
@@ -51,7 +42,6 @@ function crear_seeders($db)
         insertarDatos($db, 'configuracion', $item);
     }
 
-    // Vacunas del catalogo (calendario basico de vacunacion en Mexico)
     $vacunas = [
         ['nombre' => 'BCG (Tuberculosis)', 'esquema_edad' => 'Recien nacido'],
         ['nombre' => 'Hepatitis B', 'esquema_edad' => 'Recien nacido, 2 meses, 6 meses'],
@@ -72,14 +62,4 @@ function crear_seeders($db)
     foreach ($vacunas as $vacuna) {
         insertarDatos($db, 'vacunas_catalogo', $vacuna);
     }
-
-    $db->exec("SET FOREIGN_KEY_CHECKS = 1;");
-
-    echo "<strong style='color:green;'>Seeders creados exitosamente.</strong><br>";
-    echo "Usuarios de prueba:<br>";
-    echo "- Pediatra: pediatra@siped.com / siped123<br>";
-    echo "- Recepcionista: recepcion@siped.com / siped123<br>";
 }
-
-$db = conectar();
-crear_seeders($db);

@@ -28,14 +28,14 @@ final class PacientesTest extends TestCase
     public function testCalcularEdadMenor3Anios(): void
     {
         $edad = calcularEdad(date('Y-m-d', strtotime('-2 years -4 months')));
-        $this->assertStringContainsString('2 anio', $edad);
+        $this->assertStringContainsString('2 año', $edad);
         $this->assertStringContainsString('4 mes', $edad);
     }
 
     public function testCalcularEdadMayor3Anios(): void
     {
         $edad = calcularEdad(date('Y-m-d', strtotime('-5 years -2 months')));
-        $this->assertStringContainsString('5 anios', $edad);
+        $this->assertStringContainsString('5 año', $edad);
         $this->assertStringNotContainsString('mes', $edad);
     }
 
@@ -250,8 +250,10 @@ final class PacientesTest extends TestCase
 
     public function testListadoSoloPacientesActivos(): void
     {
+        $sufijo = '_' . uniqid();
+
         insertarDatos(self::$db, 'paciente', [
-            'nombre' => 'Activo',
+            'nombre' => 'Activo' . $sufijo,
             'apellidos' => 'Uno',
             'fecha_nacimiento' => '2020-01-01',
             'sexo' => 'masculino',
@@ -259,16 +261,16 @@ final class PacientesTest extends TestCase
         ]);
 
         insertarDatos(self::$db, 'paciente', [
-            'nombre' => 'Inactivo',
+            'nombre' => 'Inactivo' . $sufijo,
             'apellidos' => 'Dos',
             'fecha_nacimiento' => '2020-02-02',
             'sexo' => 'femenino',
             'estado' => 'inactivo'
         ]);
 
-        $pacientes = listarPacientes(self::$db);
+        $pacientes = listarPacientes(self::$db, 'Activo' . $sufijo);
         $this->assertCount(1, $pacientes);
-        $this->assertEquals('Activo', $pacientes[0]['nombre']);
+        $this->assertEquals('Activo' . $sufijo, $pacientes[0]['nombre']);
     }
 
     public function testListadoConBusqueda(): void

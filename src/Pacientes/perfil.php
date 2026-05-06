@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../funciones/auth.php';
 require_once __DIR__ . '/../funciones/pacientes.php';
+require_once __DIR__ . '/../funciones/consultas.php';
 
 requerirRol(['recepcionista', 'pediatra']);
 
@@ -32,6 +33,7 @@ if (!$paciente) {
 
 $edad = calcularEdad($paciente['fecha_nacimiento']);
 $citas = obtenerCitasPaciente($db, $idPaciente);
+$historialConsultas = $esPediatra ? obtenerHistorialPaciente($db, $idPaciente) : [];
 
 ?>
 <!DOCTYPE html>
@@ -84,7 +86,7 @@ $citas = obtenerCitasPaciente($db, $idPaciente);
 
         <div class="tabs" id="tabsPaciente">
             <button class="tab-btn active" data-tab="contacto">Datos de Contacto</button>
-            <button class="tab-btn" data-tab="citas">Proximas Citas</button>
+            <button class="tab-btn" data-tab="citas">Citas</button>
             <?php if ($esPediatra): ?>
                 <button class="tab-btn" data-tab="historial">Historial Clinico</button>
                 <button class="tab-btn" data-tab="vacunas">Vacunas</button>
@@ -205,9 +207,46 @@ $citas = obtenerCitasPaciente($db, $idPaciente);
                         <h2>Historial Clinico</h2>
                     </div>
                     <div class="card-body">
-                        <div class="empty-state">
-                            <p>El historial de consultas se implementara en la Fase 4.</p>
-                        </div>
+                        <?php if (empty($historialConsultas)): ?>
+                            <div class="empty-state">
+                                <p>No hay consultas registradas para este paciente.</p>
+                            </div>
+                        <?php else: ?>
+                            <div class="historial-list">
+                                <?php foreach ($historialConsultas as $consulta): ?>
+                                    <div class="historial-item" data-consulta="<?= $consulta['id_consulta'] ?>" data-cita="<?= $consulta['id_cita'] ?>">
+                                        <div class="historial-item-header">
+                                            <span class="font-semibold"><?= date('d/m/Y H:i', strtotime($consulta['fecha_hora'])) ?></span>
+                                            <div class="historial-actions">
+                                                <span class="badge badge-realizada">Realizada</span>
+                                                <button type="button" class="btn btn-outline btn-sm btn-descargar-receta" data-consulta="<?= $consulta['id_consulta'] ?>" data-cita="<?= $consulta['id_cita'] ?>">Descargar Receta</button>
+                                            </div>
+                                        </div>
+                                        <?php if (!empty($consulta['motivo_consulta'])): ?>
+                                            <p class="text-sm"><strong>Motivo:</strong> <?= htmlspecialchars($consulta['motivo_consulta']) ?></p>
+                                        <?php endif; ?>
+                                        <?php if (!empty($consulta['anamnesis'])): ?>
+                                            <div class="historial-anamnesis">
+                                                <p class="text-sm"><strong>Anamnesis:</strong></p>
+                                                <p class="text-sm text-muted"><?= htmlspecialchars($consulta['anamnesis']) ?></p>
+                                            </div>
+                                        <?php endif; ?>
+                                        <p class="text-sm mt-sm"><strong>Diagnostico:</strong> <?= htmlspecialchars($consulta['diagnostico']) ?></p>
+                                        <div class="text-sm text-muted mt-sm">
+                                            <?php if ($consulta['peso']): ?>Peso: <?= $consulta['peso'] ?>kg | <?php endif; ?>
+                                            <?php if ($consulta['talla']): ?>Talla: <?= $consulta['talla'] ?>cm | <?php endif; ?>
+                                            <?php if ($consulta['perimetro_cefalico']): ?>P.C.: <?= $consulta['perimetro_cefalico'] ?>cm | <?php endif; ?>
+                                            <?php if ($consulta['temperatura']): ?>Temp: <?= $consulta['temperatura'] ?>°C | <?php endif; ?>
+                                            <?php if ($consulta['frec_cardiaca']): ?>F.C.: <?= $consulta['frec_cardiaca'] ?>lpm | <?php endif; ?>
+                                            <?php if ($consulta['frec_respiratoria']): ?>F.R.: <?= $consulta['frec_respiratoria'] ?>rpm<?php endif; ?>
+                                        </div>
+                                        <?php if (!empty($consulta['notas_laboratorio'])): ?>
+                                            <p class="text-sm mt-sm"><strong>Notas Laboratorio:</strong> <?= htmlspecialchars($consulta['notas_laboratorio']) ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -239,6 +278,45 @@ $citas = obtenerCitasPaciente($db, $idPaciente);
 
                     this.classList.add('active');
                     document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+                });
+            });
+
+            document.querySelectorAll('.btn-descargar-receta').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var idConsulta = this.getAttribute('data-consulta');
+                    var idCita = this.getAttribute('data-cita');
+                    var btnOriginal = this;
+
+                    btnOriginal.disabled = true;
+                    btnOriginal.textContent = 'Generando...';
+
+                    fetch('/Consultas/api_receta', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id_consulta: idConsulta, id_cita: idCita })
+                    })
+                    .then(function(r) { return r.json(); })
+                    .then(function(resp) {
+                        if (resp.exito) {
+                            var link = document.createElement('a');
+                            link.href = resp.ruta;
+                            link.download = 'receta_' + idCita + '.pdf';
+                            link.target = '_blank';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            btnOriginal.textContent = 'Descargar Receta';
+                        } else {
+                            alert('Error: ' + resp.error);
+                            btnOriginal.textContent = 'Reintentar';
+                        }
+                        btnOriginal.disabled = false;
+                    })
+                    .catch(function() {
+                        alert('Error de conexion');
+                        btnOriginal.textContent = 'Reintentar';
+                        btnOriginal.disabled = false;
+                    });
                 });
             });
         });

@@ -10,6 +10,9 @@
          beStrictAboutOutputDuringTests="true"
          failOnRisky="true"
          failOnWarning="true">
+    <php>
+        <const name="MODO_PRUEBA" value="true"/>
+    </php>
     <testsuites>
         <testsuite name="Funciones">
             <directory>tests/Funciones</directory>

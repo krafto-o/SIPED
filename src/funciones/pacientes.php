@@ -18,10 +18,10 @@ function calcularEdad($fechaNacimiento): string
             }
             return $meses . ' mes' . ($meses > 1 ? 'es' : '');
         }
-        return $anios . ' anio' . ($anios > 1 ? 's' : '') . ' y ' . $meses . ' mes' . ($meses > 1 ? 'es' : '');
+        return $anios . ' año' . ($anios > 1 ? 's' : '') . ' y ' . $meses . ' mes' . ($meses > 1 ? 'es' : '');
     }
 
-    return $anios . ' anio' . ($anios > 1 ? 's' : '');
+    return $anios . ' año' . ($anios > 1 ? 's' : '');
 }
 
 function validarDuplicadoPaciente(PDO $db, $nombre, $apellidos, $fechaNacimiento): bool
@@ -66,7 +66,7 @@ function registrarPacienteConTutores(PDO $db, array $datosPaciente, array $tutor
                     'telefono' => $tutor['telefono'],
                     'correo' => $tutor['correo'] ?? null,
                     'direccion' => $tutor['direccion'] ?? null,
-                    'estado' => 'activo'
+                    'estado' => 'activo',
                 ];
 
                 $exitoTutor = insertarDatos($db, 'tutor', $datosTutor);
@@ -84,7 +84,7 @@ function registrarPacienteConTutores(PDO $db, array $datosPaciente, array $tutor
             $datosPivote = [
                 'id_paciente' => $idPaciente,
                 'id_tutor' => $idTutor,
-                'parentesco' => $tutor['parentesco']
+                'parentesco' => $tutor['parentesco'],
             ];
 
             $exitoPivote = insertarDatos($db, 'paciente_tutor', $datosPivote);
@@ -137,7 +137,7 @@ function obtenerPacienteConTutores(PDO $db, int $idPaciente): ?array
 
 function obtenerPacienteCompleto(PDO $db, int $idPaciente): ?array
 {
-    $pacientes = obtenerDatos($db, 'paciente', 'id_paciente = ?', [$idPaciente]);
+    $pacientes = obtenerDatos($db, 'paciente', 'id_paciente = ? AND estado = ?', [$idPaciente, 'activo']);
 
     if (empty($pacientes)) {
         return null;
@@ -167,14 +167,7 @@ function darBajaPaciente(PDO $db, int $idPaciente): bool
 
 function desvincularTutor(PDO $db, int $idPaciente, int $idTutor): bool
 {
-    try {
-        $sql = "DELETE FROM paciente_tutor WHERE id_paciente = ? AND id_tutor = ?";
-        $stmt = $db->prepare($sql);
-        return $stmt->execute([$idPaciente, $idTutor]);
-    } catch (\PDOException $e) {
-        registrarError('Error al desvincular tutor: ' . $e->getMessage());
-        return false;
-    }
+    return eliminarRegistro($db, 'paciente_tutor', 'id_paciente = ? AND id_tutor = ?', [$idPaciente, $idTutor]);
 }
 
 function buscarTutores(PDO $db, string $termino): array
@@ -218,7 +211,7 @@ function vincularTutorAPaciente(PDO $db, int $idPaciente, int $idTutor, string $
     return insertarDatos($db, 'paciente_tutor', [
         'id_paciente' => $idPaciente,
         'id_tutor' => $idTutor,
-        'parentesco' => $parentesco
+        'parentesco' => $parentesco,
     ]);
 }
 

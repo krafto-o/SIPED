@@ -59,13 +59,13 @@ Este documento define la secuencia lógica de desarrollo para el Sistema Integra
 
 ## FASE 4: Operación Médica (Consultas e Historial)
 
-- [ ] **4.1. Iniciar Consulta y Borradores (`/Consultas/iniciar.php`)**
+- [x] **4.1. Iniciar Consulta y Borradores (`/Consultas/iniciar.php`)**
   - **Descripción:** Formulario médico segmentado y autoguardado.
   - **Implementación:** Script JS enviando datos cada 30s a `borradores_consultas`. Lista dinámica UI para agregar tratamientos.
-- [ ] **4.2. Finalizar Consulta y Receta (`/Consultas/finalizar.php`)**
+- [x] **4.2. Finalizar Consulta y Receta (`/Consultas/finalizar.php`)**
   - **Descripción:** Guardado definitivo y PDF.
   - **Implementación:** Transacción PDO (insertar en `consultas`, iterar `tratamientos`, eliminar borrador y cambiar cita a `realizada`). Generar receta con `DomPDF` en ruta temporal.
-- [ ] **4.3. Archivos Adjuntos (`/Consultas/subir_archivo.php`)**
+- [x] **4.3. Archivos Adjuntos (`/Consultas/subir_archivo.php`)**
   - **Descripción:** Subida segura de estudios.
   - **Implementación:** Guardar archivo fuera del webroot, insertar en `archivos_adjuntos` y crear script de descarga validada.
 

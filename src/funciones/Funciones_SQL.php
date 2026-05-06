@@ -1,5 +1,6 @@
 <?php
 
+if (!function_exists('registrarError')) {
 function registrarError($mensaje)
 {
     $archivoLog = __DIR__ . '/../logs/errores_db.log';
@@ -7,14 +8,36 @@ function registrarError($mensaje)
     $contenido = "[$fecha] ERROR: $mensaje" . PHP_EOL;
     error_log($contenido, 3, $archivoLog);
 }
+}
 
+if (!function_exists('conectarSinBD')) {
+function conectarSinBD(): PDO
+{
+    static $pdo = null;
+    if ($pdo === null) {
+        try {
+            $host = 'db';
+            $user = 'root';
+            $pass = 'root';
+            $pdo = new PDO("mysql:host=$host;charset=utf8mb4", $user, $pass);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (\PDOException $e) {
+            registrarError("Conexión fallida: " . $e->getMessage());
+            die("Error interno del servidor. Consulte al administrador.");
+        }
+    }
+    return $pdo;
+}
+}
+
+if (!function_exists('conectar')) {
 function conectar(): PDO
 {
     static $pdo = null;
     if ($pdo === null) {
         try {
             $host = 'db';
-            $db = 'siped';
+            $db = defined('MODO_PRUEBA') ? 'siped_test' : 'siped';
             $user = 'root';
             $pass = 'root';
             $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
@@ -26,7 +49,9 @@ function conectar(): PDO
     }
     return $pdo;
 }
+}
 
+if (!function_exists('obtenerDatos')) {
 function obtenerDatos(PDO $conexion, $tabla, $condicion = "1", $params = [])
 {
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $tabla)) {
@@ -39,19 +64,18 @@ function obtenerDatos(PDO $conexion, $tabla, $condicion = "1", $params = [])
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (\PDOException $e) {
         registrarError("Error en SELECT ($tabla): " . $e->getMessage());
-        return []; // Devuelve array vacío para que el frontend no falle
+        return [];
     }
-// MODO DE USO:
-// $db = conectar();
-// $datos = obtenerDatos($db, 'usuarios', 'id = ? AND estado = ?', [1, 'activo']);
+}
 }
 
+if (!function_exists('obtenerDatoEspecifico')) {
 function obtenerDatoEspecifico(PDO $conexion, $columnas, $tabla, $condicion = "1", $params = [])
 {
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $tabla)) {
         throw new Exception("Nombre de tabla no válido.");
     }
-    if (!preg_match('/^[a-zA-Z0-9_]+$/', $columnas)) {
+    if (!preg_match('/^[a-zA-Z0-9_, ]+$/', $columnas)) {
         throw new Exception("Nombre de la columna no válido.");
     }
     try {
@@ -61,17 +85,16 @@ function obtenerDatoEspecifico(PDO $conexion, $columnas, $tabla, $condicion = "1
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     } catch (\PDOException $e) {
         registrarError("Error en SELECT ($tabla): " . $e->getMessage());
-        return []; // Devuelve array vacío para que el frontend no falle
+        return [];
     }
 }
+}
 
+if (!function_exists('insertarDatos')) {
 function insertarDatos(PDO $conexion, $tabla, $datos)
 {
-    // 1. Extraer los nombres de las columnas (las llaves del array)
     $columnas = array_keys($datos);
-    // 2. Crear los marcadores de posición como: :nombre, :email, :edad
     $marcadores = array_map(fn($col) => ":$col", $columnas);
-    // 3. Se Construye el SQL -> INSERT INTO usuarios (nombre, email) VALUES (:nombre, :email)
     $sql = sprintf(
         "INSERT INTO %s (%s) VALUES (%s)",
         $tabla,
@@ -79,20 +102,19 @@ function insertarDatos(PDO $conexion, $tabla, $datos)
         implode(", ", $marcadores)
     );
     try {
-        // 4. Ejecutar pasando el array original.
-        // PDO mapea automáticamente las llaves (:nombre) con sus valores.
         $stmt = $conexion->prepare($sql);
         $resultado = $stmt->execute($datos);
-        return $resultado; // Devuelve true si tuvo éxito
+        return $resultado;
     } catch (\PDOException $e) {
         registrarError("Error en INSERT ($tabla): " . $e->getMessage() . " | Datos: " . json_encode($datos));
         return false;
     }
 }
+}
 
+if (!function_exists('actualizarDatos')) {
 function actualizarDatos(PDO $conexion, $tabla, $datos, $condicion, $paramsCondicion = [])
 {
-    // Construye la parte "SET columna1 = :columna1, columna2 = :columna2"
     $sets = array_map(fn($col) => "$col = :set_$col", array_keys($datos));
     $datosRenombrados = [];
     foreach ($datos as $col => $valor) {
@@ -113,10 +135,10 @@ function actualizarDatos(PDO $conexion, $tabla, $datos, $condicion, $paramsCondi
         registrarError("Error en UPDATE ($tabla): " . $e->getMessage());
         return false;
     }
-// Ejemplo de uso:
-// actualizarDatos($db, 'usuarios', ['nombre' => 'Nuevo Nombre'], 'id = :id', ['id' => 5]);
+}
 }
 
+if (!function_exists('ejecutarConsulta')) {
 function ejecutarConsulta(PDO $conexion, $sql, $params = [])
 {
     try {
@@ -127,4 +149,22 @@ function ejecutarConsulta(PDO $conexion, $sql, $params = [])
         registrarError("Error en la consulta: " . $e->getMessage());
         return [];
     }
+}
+}
+
+if (!function_exists('eliminarRegistro')) {
+function eliminarRegistro(PDO $conexion, $tabla, $condicion, $params = [])
+{
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $tabla)) {
+        throw new Exception("Nombre de tabla no valido.");
+    }
+    try {
+        $sql = "DELETE FROM $tabla WHERE $condicion";
+        $stmt = $conexion->prepare($sql);
+        return $stmt->execute($params);
+    } catch (\PDOException $e) {
+        registrarError("Error en DELETE ($tabla): " . $e->getMessage());
+        return false;
+    }
+}
 }

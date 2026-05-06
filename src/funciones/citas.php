@@ -204,7 +204,7 @@ function obtenerDetalleCita(PDO $db, int $idCita): ?array
 
 function cambiarEstadoCita(PDO $db, int $idCita, string $nuevoEstado): bool
 {
-    $estadosValidos = ['pendiente', 'confirmada', 'cancelada'];
+    $estadosValidos = ['pendiente', 'confirmada', 'cancelada', 'realizada'];
 
     if (!in_array($nuevoEstado, $estadosValidos, true)) {
         return false;
