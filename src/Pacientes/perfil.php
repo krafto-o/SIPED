@@ -3,6 +3,7 @@
 require_once __DIR__ . '/../funciones/auth.php';
 require_once __DIR__ . '/../funciones/pacientes.php';
 require_once __DIR__ . '/../funciones/consultas.php';
+require_once __DIR__ . '/../funciones/vacunas.php';
 
 requerirRol(['recepcionista', 'pediatra']);
 
@@ -34,6 +35,8 @@ if (!$paciente) {
 $edad = calcularEdad($paciente['fecha_nacimiento']);
 $citas = obtenerCitasPaciente($db, $idPaciente);
 $historialConsultas = $esPediatra ? obtenerHistorialPaciente($db, $idPaciente) : [];
+$vacunasPaciente = $esPediatra ? obtenerVacunasPaciente($db, $idPaciente) : [];
+$vacunasAtrasadas = $esPediatra ? calcularVacunasPendientes($db, $idPaciente) : [];
 
 ?>
 <!DOCTYPE html>
@@ -80,6 +83,11 @@ $historialConsultas = $esPediatra ? obtenerHistorialPaciente($db, $idPaciente) :
                 </div>
                 <?php if ($esPediatra && !empty($paciente['alergias'])): ?>
                     <div class="alert-alergias">ALERGIAS: <?= htmlspecialchars($paciente['alergias']) ?></div>
+                <?php endif; ?>
+                <?php if ($esPediatra && !empty($vacunasAtrasadas)): ?>
+                    <div class="alert alert-warning">
+                        <strong>Aviso:</strong> El paciente tiene <?= count($vacunasAtrasadas) ?> vacunas pendientes.
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -255,11 +263,65 @@ $historialConsultas = $esPediatra ? obtenerHistorialPaciente($db, $idPaciente) :
                 <div class="card">
                     <div class="card-header">
                         <h2>Cartilla de Vacunas</h2>
+                        <form action="/Vacunas/aplicar" method="POST" style="display:inline;">
+                            <input type="hidden" name="id_paciente" value="<?= $idPaciente ?>">
+                            <button type="submit" class="btn btn-primary btn-sm">Registrar Nueva Vacuna</button>
+                        </form>
                     </div>
                     <div class="card-body">
-                        <div class="empty-state">
-                            <p>La cartilla digital de vacunas se implementara en la Fase 5.</p>
-                        </div>
+                        <?php if (!empty($vacunasAtrasadas)): ?>
+                            <div class="alert alert-warning" style="margin-bottom: var(--spacing-lg);">
+                                <strong>Vacunas pendientes:</strong>
+                                <ul style="margin: var(--spacing-sm) 0 0; padding-left: var(--spacing-lg);">
+                                    <?php foreach ($vacunasAtrasadas as $pendiente): ?>
+                                        <li><?= htmlspecialchars($pendiente['nombre']) ?> <span class="text-muted">(<?= htmlspecialchars($pendiente['esquema_edad']) ?>)</span></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if (empty($vacunasPaciente)): ?>
+                            <div class="empty-state">
+                                <p>No hay vacunas registradas para este paciente.</p>
+                            </div>
+                        <?php else: ?>
+                            <div class="table-container">
+                                <table class="vacuna-tabla">
+                                    <thead>
+                                        <tr>
+                                            <th>Vacuna</th>
+                                            <th>Esquema</th>
+                                            <th>Fecha Aplicacion</th>
+                                            <th>Lote</th>
+                                            <th>Origen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($vacunasPaciente as $vacuna): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($vacuna['vacuna_nombre']) ?></td>
+                                                <td><?= htmlspecialchars($vacuna['esquema_edad']) ?></td>
+                                                <td><?= date('d/m/Y', strtotime($vacuna['fecha_aplicacion'])) ?></td>
+                                                <td>
+                                                    <?php if ($vacuna['aplicada_externamente']): ?>
+                                                        <span class="text-muted">N/A - Dato Externo</span>
+                                                    <?php else: ?>
+                                                        <?= htmlspecialchars($vacuna['lote'] ?? '-') ?>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <?php if ($vacuna['aplicada_externamente']): ?>
+                                                        <span class="badge-externa">Externa</span>
+                                                    <?php else: ?>
+                                                        <span class="badge-interna">Interna</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

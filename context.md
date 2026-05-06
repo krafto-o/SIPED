@@ -1,4 +1,4 @@
-# Contexto del Proyecto SIPED - Fases 0, 1, 2, 3 y 4 Completadas
+# Contexto del Proyecto SIPED - Fases 0, 1, 2, 3, 4 y 5 Completadas
 
 ## Documentos de Referencia Utilizados
 
@@ -14,6 +14,7 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | `spec_fase2.md` | Especificaciones de pacientes, tutores, perfil Hub y permisos |
 | `spec_fase3.md` | Especificaciones de agenda, citas, FullCalendar, anti-double booking y gestion de estados |
 | `spec_fase4.md` | Especificaciones de consultas, borradores, recetas PDF y archivos adjuntos |
+| `spec_fase5.md` | Especificaciones de vacunas, cartilla digital, alertas y registro de dosis |
 
 ## Fases Completadas
 
@@ -67,6 +68,19 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 - Endpoint `api_receta.php` para descarga de recetas existentes o generacion on-demand
 - 15 tests de integracion para modulo de consultas
 
+### FASE 5: Especializacion Pediatrica (Vacunas)
+- Funciones de vacunas: `obtenerVacunasCatalogo()`, `obtenerVacunasPaciente()`, `parsearEsquemaEdadMeses()`, `calcularVacunasPendientes()`, `verificarVacunaDuplicada()`, `registrarVacuna()`
+- Algoritmo de deteccion de vacunas atrasadas: calcula edad en meses, parsea `esquema_edad` del catalogo, compara con vacunas aplicadas
+- Banner de alerta minimalista en perfil del paciente: "Aviso: el paciente tiene X vacunas pendientes"
+- Detalle de vacunas pendientes (nombre + esquema) dentro de la pestana Vacunas
+- Cartilla digital con tabla cronologica: columnas Vacuna, Esquema, Fecha, Lote, Origen
+- Badges semanticos: `.badge-interna` (verde) y `.badge-externa` (gris)
+- Formulario independiente de registro (`/Vacunas/aplicar`) sin requerir `id_cita` ni `id_consulta`
+- Checkbox `aplicada_externamente` deshabilita input de lote via JS vanilla
+- Validacion de duplicados (misma vacuna, misma fecha)
+- Transacciones PDO con deteccion de transaccion anidada (`$db->inTransaction()`)
+- 13 tests de integracion para modulo de vacunas (catalogo, registro, alertas, parseo de edad, duplicados, orden cronologico)
+
 ---
 
 ## Archivos Creados
@@ -106,6 +120,9 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | `storage/pacientes/temp/.htaccess` | 4 | Proteccion de acceso directo a archivos temporales |
 | `src/funciones/instalar.php` | 0 | Script maestro de instalacion: crea BD, 13 tablas, seeders base y datos de prueba funcionales |
 | `src/funciones/setup_test_db.php` | 0 | Script para crear BD `siped_test` limpia para PHPUnit |
+| `src/funciones/vacunas.php` | 5 | 6 funciones: `obtenerVacunasCatalogo()`, `obtenerVacunasPaciente()`, `parsearEsquemaEdadMeses()`, `calcularVacunasPendientes()`, `verificarVacunaDuplicada()`, `registrarVacuna()` |
+| `src/tests/Integration/VacunasTest.php` | 5 | 13 pruebas de vacunas (catalogo, registro interna/externa, alertas, parseo edad, duplicados, orden cronologico) |
+| `src/Vacunas/aplicar.php` | 5 | Formulario de registro de vacuna con validacion, checkbox externa, JS toggle de lote |
 
 ## Archivos Modificados
 
@@ -124,8 +141,9 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | `src/Consultas/api_finalizar.php` | Borrador y receta generados dentro de transaccion via parametros de `finalizarConsulta()` |
 | `src/.htaccess` | Agregados headers `X-XSS-Protection` y `Referrer-Policy` |
 | `src/login.php` | Corregido bug: `match` usaba `=>` (array key) en vez de `=` (asignacion) para mensajes de error |
-| `src/Pacientes/perfil.php` | Agregada pestana "Historial Clinico" con listado de consultas pasadas y boton "Descargar Receta" |
-| `roadmap.md` | Marcadas tareas Fase 1 (1.1-1.5), Fase 2 (2.1-2.4), Fase 3 (3.1-3.3) y Fase 4 (4.1-4.3) como completadas |
+| `src/Pacientes/perfil.php` | Agregada pestana "Historial Clinico" con listado de consultas pasadas y boton "Descargar Receta"; Fase 5: import `vacunas.php`, alerta minimalista de vacunas pendientes en banner, contenido real de pestana Vacunas con tabla cronologica y badge de origen |
+| `src/css/estilos.css` | Fase 5: +50 lineas: `.badge-interna`, `.badge-externa`, `.vacuna-atrasada`, `.vacuna-tabla`, `.vacuna-form-grid`; padding de tabla aumentado a `var(--spacing-md)` para legibilidad |
+| `roadmap.md` | Marcadas tareas Fase 1 (1.1-1.5), Fase 2 (2.1-2.4), Fase 3 (3.1-3.3), Fase 4 (4.1-4.3) y Fase 5 (5.1-5.2) como completadas |
 
 ## Archivos Eliminados
 
@@ -157,6 +175,11 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 19. **Tests contaminaban BD de desarrollo**: Las pruebas compartian BD con datos manuales. Solucion: BD separada `siped_test` con constante `MODO_PRUEBA`.
 20. **`testListadoSoloPacientesActivos` fallaba por datos residuales**: Esperaba 1 paciente pero habia 44. Solucion: usar sufijo `uniqid()` para nombres unicos.
 21. **Tests UTF-8 fallaban por encoding**: `assertStringContainsString('anio')` no encontraba `'año'`. Solucion: usar caracteres UTF-8 reales en assertions.
+22. **Boton Cancelar en aplicar.php guardaba vacuna**: El `<form>` de cancelar estaba anidado dentro del `<form>` principal (HTML invalido). El navegador ignoraba el form interno y enviaba los datos. Solucion: mover el form de cancelar fuera del form de registro como elemento hermano.
+23. **Columnas de tabla de vacunas muy pegadas**: Padding vertical de 8px insuficiente. Solucion: aumentar a `var(--spacing-md)` (16px), agregar `text-transform: uppercase` y `letter-spacing` a headers, hover en filas.
+24. **`obtenerVacunasPaciente()` no retornaba `id_vacuna`**: El JOIN no incluia la columna `va.id_vacuna`, causando `Undefined array key` en `calcularVacunasPendientes()`. Solucion: agregar `va.id_vacuna` al SELECT.
+25. **`parsearEsquemaEdadMeses()` regex incorrecto**: El patron de anos capturaba antes que el de rangos. Solucion: mover el regex de rango `(\d+)-(\d+)\s*mes` antes del de anos.
+26. **`ConsultasTest` flaky por citas residuales**: Las citas de `CitasTest` no se limpiaban entre clases de prueba, causando conflictos de double-booking en `setUpBeforeClass` de `ConsultasTest`. Solucion: agregar `DELETE FROM citas WHERE id_usuario = ?` antes de crear la cita de prueba.
 
 ## Estado del Entorno
 
@@ -166,7 +189,7 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | PHP | 8.3.30 en contenedor |
 | MariaDB | 10.11 |
 | Composer | Instalado, dependencias: DomPDF v3.1.5, PHPUnit v11.5.55 |
-| PHPUnit | **61 tests pasando, 150 assertions, 0 fallos** |
+| PHPUnit | **92 tests pasando, 265 assertions, 0 fallos** |
 | BD desarrollo (`siped`) | 13 tablas + seeders base + datos de prueba funcionales (3 pacientes, 4 tutores, 5 citas, 1 consulta realizada) |
 | BD tests (`siped_test`) | 13 tablas + seeders base + datos minimos para tests (1 paciente, 1 tutor) |
 
@@ -210,6 +233,7 @@ Esto crea ambas BDs (`siped` y `siped_test`) con tablas, seeders y datos de prue
 | `/Consultas/api_subir_archivo` | 302 → login | 200 (POST) | 302 → login |
 | `/Consultas/api_receta` | 302 → login | 200 (POST) | 302 → login |
 | `/Consultas/ver_archivo` | 302 → login | 200 (GET con ruta) | 302 → login |
+| `/Vacunas/aplicar` | 302 → login | 200 (acceso POST) | 302 → login |
 
 ## Reglas Implementadas
 
@@ -226,9 +250,15 @@ Esto crea ambas BDs (`siped` y `siped_test`) con tablas, seeders y datos de prue
 - **Archivos adjuntos en dos pasos**: Subida a `temp/{id_cita}/` antes de finalizar, registro en BD durante transaccion, movimiento a `pacientes/{id_paciente}/` solo tras commit exitoso.
 - **BD aislada para tests**: Constante `MODO_PRUEBA` en `phpunit.xml` hace que `conectar()` use `siped_test` en lugar de `siped`.
 - **Headers de seguridad**: `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`.
+- **Funciones protegidas contra redeclaracion en vacunas.php**: Todas envueltas en `if (!function_exists())`.
+- **Parseo inteligente de esquema de edad**: Funcion `parsearEsquemaEdadMeses()` maneja "Recien nacido", "2 meses", "1 año", "6 anos", "6-23 meses" con regex en orden de prioridad.
+- **Transacciones anidadas detectadas**: `registrarVacuna()` verifica `$db->inTransaction()` antes de iniciar para evitar conflictos con tests.
+- **Checkbox toggle en JS vanilla**: Al marcar `aplicada_externamente`, se deshabilita el input de lote y se remueve `required`.
+- **Alerta minimalista en banner**: Solo muestra conteo de vacunas pendientes; el detalle completo (nombre + esquema) se muestra dentro de la pestana Vacunas.
 
-## Proximo Paso: Fase 5
+## Proximo Paso: Fase 6
 
-Segun `roadmap.md`, la Fase 5 incluye:
-- 5.1 Cartilla digital de vacunas y alertas de vacunas atrasadas (`vacunas_catalogo`, `vacunas_aplicadas`)
-- 5.2 Aplicacion de vacunas con checkbox `aplicada_externamente`
+Segun `roadmap.md`, la Fase 6 incluye:
+- 6.1 Caja de cobro (`/Pagos/index.php`) - Listado de consultas con `estado_pago = 'pendiente'`
+- 6.2 Registro de cobro (`/Pagos/nuevo.php`) - Transaccion PDO para insertar en `pagos` y actualizar `consultas.estado_pago`
+- 6.3 Dashboard y exportacion (`/Reportes/index.php`) - Agregaciones SQL (`SUM()`) y exportacion a PDF con DomPDF

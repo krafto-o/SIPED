@@ -1143,3 +1143,71 @@ body {
     color: var(--color-danger);
 }
 
+/* Modulo Vacunas */
+
+.badge-interna {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #d1fae5;
+    color: #065f46;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-externa {
+    display: inline-block;
+    padding: 2px 8px;
+    background-color: #e5e7eb;
+    color: #374151;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.vacuna-atrasada {
+    background-color: #fef3c7;
+    border-left: 3px solid var(--color-warning);
+}
+
+.vacuna-tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vacuna-tabla th,
+.vacuna-tabla td {
+    padding: var(--spacing-md);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.vacuna-tabla th {
+    background-color: var(--color-background);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+.vacuna-tabla tbody tr:hover {
+    background-color: var(--color-background);
+}
+
+.vacuna-tabla tr:last-child td {
+    border-bottom: none;
+}
+
+.vacuna-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+}
+
+@media (max-width: 768px) {
+    .vacuna-form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+

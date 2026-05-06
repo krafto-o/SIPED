@@ -34,7 +34,10 @@ final class ConsultasTest extends TestCase
         $usuarios = obtenerDatos(self::$db, 'usuarios', "rol = 'pediatra' AND estado = 'activo'");
         self::$idPediatra = (int) $usuarios[0]['id_usuario'];
 
-        $fechaHora = date('Y-m-d H:i:s', strtotime('+400 days 03:00:00'));
+        ejecutarConsulta(self::$db, "DELETE FROM citas WHERE id_usuario = ?", [self::$idPediatra]);
+        ejecutarConsulta(self::$db, "DELETE FROM borradores_consultas WHERE id_usuario = ?", [self::$idPediatra]);
+
+        $fechaHora = '2028-06-15 03:00:00';
         $resultado = agendarCita(
             self::$db,
             self::$idPaciente,

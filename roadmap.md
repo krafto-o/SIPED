@@ -71,10 +71,10 @@ Este documento define la secuencia lógica de desarrollo para el Sistema Integra
 
 ## FASE 5: Especialización Pediátrica (Vacunas)
 
-- [ ] **5.1. Cartilla Digital y Alertas (`/Vacunas/cartilla.php`)**
+- [x] **5.1. Cartilla Digital y Alertas (`/Vacunas/cartilla.php`)**
   - **Descripción:** Visualización de vacunas en el Perfil del Paciente.
   - **Implementación:** Algoritmo que compara edad del niño con `vacunas_catalogo`. Si hay atrasos, mostrar banner amarillo.
-- [ ] **5.2. Aplicación de Vacunas (`/Vacunas/aplicar.php`)**
+- [x] **5.2. Aplicación de Vacunas (`/Vacunas/aplicar.php`)**
   - **Descripción:** Registro independiente de dosis.
   - **Implementación:** Formulario con checkbox `aplicada_externamente` que anule la obligatoriedad del campo lote.
 
