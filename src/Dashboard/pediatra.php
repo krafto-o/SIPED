@@ -77,7 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_paciente'])) {
 
         <div class="quick-actions">
             <a href="/Agenda/index" class="btn btn-primary">Ver Agenda Completa</a>
-            <a href="/Reportes/index" class="btn btn-secondary">Estadísticas del Sistema</a>
+            <a href="/Pagos/index" class="btn btn-secondary">Caja de Cobro</a>
+            <a href="/Reportes/index" class="btn btn-outline">Estadisticas del Sistema</a>
         </div>
 
         <div class="card mb-lg">

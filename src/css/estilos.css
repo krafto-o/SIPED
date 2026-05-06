@@ -1211,3 +1211,73 @@ body {
     }
 }
 
+/* Modulo Pagos y Reportes */
+
+.metric-card {
+    background-color: var(--color-surface);
+    border-radius: var(--radius);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--color-border);
+    text-align: center;
+}
+
+.metric-card .metric-label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--spacing-xs);
+}
+
+.metric-card .metric-value {
+    display: block;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+}
+
+.metric-card .metric-sub {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: var(--spacing-xs);
+}
+
+.badge-pagado {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.badge-pendiente-pago {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.export-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-lg);
+}
+
+.firma-linea {
+    margin-top: var(--spacing-xl);
+    text-align: center;
+    padding-top: var(--spacing-xl);
+}
+
+.firma-linea .linea {
+    display: block;
+    width: 250px;
+    margin: 0 auto var(--spacing-xs);
+    border-top: 1px solid var(--color-text-primary);
+}
+
+.firma-linea span {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+

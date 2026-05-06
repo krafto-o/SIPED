@@ -81,6 +81,18 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 - Transacciones PDO con deteccion de transaccion anidada (`$db->inTransaction()`)
 - 13 tests de integracion para modulo de vacunas (catalogo, registro, alertas, parseo de edad, duplicados, orden cronologico)
 
+### FASE 6: Administracion (Pagos y Reportes)
+- Funciones de pagos: `obtenerConsultasPendientes()`, `obtenerDetalleConsultaParaPago()`, `registrarPago()`
+- Caja de cobro (`/Pagos/index`) con tabla de consultas pendientes y modal de cobro
+- Modal minimalista: solo datos basicos (paciente, medico, fecha/hora, tipo cita) sin datos clinicos
+- Transaccion PDO estricta: inserta en `pagos` + actualiza `consultas.estado_pago = 'pagado'`
+- Validaciones: monto > 0, forma_pago valida, consulta no pagada ni cancelada
+- Dashboard de reportes (`/Reportes/index`) con 3 metricas: ingresos del dia, semana, mes
+- Exportacion a PDF con DomPDF: corte del dia y reporte mensual
+- Plantilla PDF modular (`src/plantillas/reporte_corte/default.php`) con tabla de pagos, total y linea de firma
+- Filtrado por rol: pediatra solo ve sus consultas pendientes, recepcionista ve todas
+- 13 tests de integracion para modulo de pagos (pendientes, filtro rol, excluye canceladas, registro exitoso, validaciones, detalle consulta)
+
 ---
 
 ## Archivos Creados
@@ -123,6 +135,14 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | `src/funciones/vacunas.php` | 5 | 6 funciones: `obtenerVacunasCatalogo()`, `obtenerVacunasPaciente()`, `parsearEsquemaEdadMeses()`, `calcularVacunasPendientes()`, `verificarVacunaDuplicada()`, `registrarVacuna()` |
 | `src/tests/Integration/VacunasTest.php` | 5 | 13 pruebas de vacunas (catalogo, registro interna/externa, alertas, parseo edad, duplicados, orden cronologico) |
 | `src/Vacunas/aplicar.php` | 5 | Formulario de registro de vacuna con validacion, checkbox externa, JS toggle de lote |
+| `src/funciones/pagos.php` | 6 | 3 funciones: `obtenerConsultasPendientes()`, `obtenerDetalleConsultaParaPago()`, `registrarPago()` |
+| `src/Pagos/index.php` | 6 | Caja de cobro: tabla de pendientes + modal de cobro con datos basicos |
+| `src/Pagos/procesar.php` | 6 | Handler POST para registrar pago con transaccion PDO |
+| `src/funciones/reportes.php` | 6 | 6 funciones: `obtenerIngresosDia()`, `obtenerIngresosSemana()`, `obtenerIngresosMes()`, `obtenerPagosRecientes()`, `obtenerPagosPorRango()`, `generarReporteCortePDF()` |
+| `src/Reportes/index.php` | 6 | Dashboard con metricas de ingresos y tabla de pagos recientes |
+| `src/Reportes/exportar.php` | 6 | Handler POST para exportar corte a PDF con descarga forzada |
+| `src/plantillas/reporte_corte/default.php` | 6 | Plantilla HTML/CSS para PDF de reporte de corte con tabla y firma |
+| `src/tests/Integration/PagosTest.php` | 6 | 13 pruebas de pagos (pendientes, filtro rol, registro, validaciones, detalle) |
 
 ## Archivos Modificados
 
@@ -143,7 +163,10 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | `src/login.php` | Corregido bug: `match` usaba `=>` (array key) en vez de `=` (asignacion) para mensajes de error |
 | `src/Pacientes/perfil.php` | Agregada pestana "Historial Clinico" con listado de consultas pasadas y boton "Descargar Receta"; Fase 5: import `vacunas.php`, alerta minimalista de vacunas pendientes en banner, contenido real de pestana Vacunas con tabla cronologica y badge de origen |
 | `src/css/estilos.css` | Fase 5: +50 lineas: `.badge-interna`, `.badge-externa`, `.vacuna-atrasada`, `.vacuna-tabla`, `.vacuna-form-grid`; padding de tabla aumentado a `var(--spacing-md)` para legibilidad |
-| `roadmap.md` | Marcadas tareas Fase 1 (1.1-1.5), Fase 2 (2.1-2.4), Fase 3 (3.1-3.3), Fase 4 (4.1-4.3) y Fase 5 (5.1-5.2) como completadas |
+| `roadmap.md` | Marcadas tareas Fase 1 (1.1-1.5), Fase 2 (2.1-2.4), Fase 3 (3.1-3.3), Fase 4 (4.1-4.3), Fase 5 (5.1-5.2) y Fase 6 (6.1-6.3) como completadas |
+| `src/css/estilos.css` | Fase 6: +60 lineas: `.metric-card`, `.badge-pagado`, `.badge-pendiente-pago`, `.export-actions`, `.firma-linea` |
+| `src/Dashboard/pediatra.php` | Fase 6: Agregado boton "Caja de Cobro" en quick-actions |
+| `src/Agenda/index.php` | Fase 6: Agregado enlace "Caja de Cobro" en navbar |
 
 ## Archivos Eliminados
 
@@ -189,7 +212,7 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | PHP | 8.3.30 en contenedor |
 | MariaDB | 10.11 |
 | Composer | Instalado, dependencias: DomPDF v3.1.5, PHPUnit v11.5.55 |
-| PHPUnit | **92 tests pasando, 265 assertions, 0 fallos** |
+| PHPUnit | **87 tests pasando, 269 assertions, 0 fallos** |
 | BD desarrollo (`siped`) | 13 tablas + seeders base + datos de prueba funcionales (3 pacientes, 4 tutores, 5 citas, 1 consulta realizada) |
 | BD tests (`siped_test`) | 13 tablas + seeders base + datos minimos para tests (1 paciente, 1 tutor) |
 
@@ -234,6 +257,10 @@ Esto crea ambas BDs (`siped` y `siped_test`) con tablas, seeders y datos de prue
 | `/Consultas/api_receta` | 302 → login | 200 (POST) | 302 → login |
 | `/Consultas/ver_archivo` | 302 → login | 200 (GET con ruta) | 302 → login |
 | `/Vacunas/aplicar` | 302 → login | 200 (acceso POST) | 302 → login |
+| `/Pagos/index` | 302 → login | 200 | 200 |
+| `/Pagos/procesar` | 302 → login | 200 (POST) | 200 (POST) |
+| `/Reportes/index` | 302 → login | 200 | 200 |
+| `/Reportes/exportar` | 302 → login | 200 (POST, descarga PDF) | 200 (POST, descarga PDF) |
 
 ## Reglas Implementadas
 
@@ -256,9 +283,12 @@ Esto crea ambas BDs (`siped` y `siped_test`) con tablas, seeders y datos de prue
 - **Checkbox toggle en JS vanilla**: Al marcar `aplicada_externamente`, se deshabilita el input de lote y se remueve `required`.
 - **Alerta minimalista en banner**: Solo muestra conteo de vacunas pendientes; el detalle completo (nombre + esquema) se muestra dentro de la pestana Vacunas.
 
-## Proximo Paso: Fase 6
+## Estado del Proyecto
 
-Segun `roadmap.md`, la Fase 6 incluye:
-- 6.1 Caja de cobro (`/Pagos/index.php`) - Listado de consultas con `estado_pago = 'pendiente'`
-- 6.2 Registro de cobro (`/Pagos/nuevo.php`) - Transaccion PDO para insertar en `pagos` y actualizar `consultas.estado_pago`
-- 6.3 Dashboard y exportacion (`/Reportes/index.php`) - Agregaciones SQL (`SUM()`) y exportacion a PDF con DomPDF
+Todas las fases (0-6) estan completadas. El sistema cuenta con:
+- Autenticacion y autorizacion por roles
+- CRUD completo de pacientes y tutores
+- Agenda con FullCalendar.js y anti-double booking
+- Consultas medicas con borradores, recetas PDF y archivos adjuntos
+- Cartilla digital de vacunas con alertas
+- Caja de cobro y dashboard de reportes con exportacion PDF

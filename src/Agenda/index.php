@@ -32,6 +32,7 @@ unset($_SESSION['success_cita'], $_SESSION['error_cita']);
         <a href="<?= $rol === 'pediatra' ? '/Dashboard/pediatra' : '/Agenda/index' ?>" class="navbar-brand">SIPED</a>
         <div class="navbar-user">
             <a href="/Pacientes/index" class="btn btn-outline btn-sm">Pacientes</a>
+            <a href="/Pagos/index" class="btn btn-outline btn-sm">Caja de Cobro</a>
             <a href="/Agenda/crear" class="btn btn-primary btn-sm">Nueva Cita</a>
             <span><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']) ?> - <?= ucfirst($usuario['rol']) ?></span>
             <form action="/Agenda/index" method="POST" style="display:inline;">

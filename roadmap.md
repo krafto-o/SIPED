@@ -80,12 +80,12 @@ Este documento define la secuencia lógica de desarrollo para el Sistema Integra
 
 ## FASE 6: Administración (Pagos y Reportes)
 
-- [ ] **6.1. Caja de Cobro (`/Pagos/index.php`)**
+- [x] **6.1. Caja de Cobro (`/Pagos/index.php`)**
   - **Descripción:** Listado de cuentas por cobrar.
-  - **Implementación:** Mostrar consultas con `estado_pago = 'pendiente'`.
-- [ ] **6.2. Registro de Cobro (`/Pagos/nuevo.php`)**
+  - **Implementación:** Mostrar consultas con `estado_pago = 'pendiente'`. Modal con datos básicos (paciente, médico, fecha/hora, tipo cita).
+- [x] **6.2. Registro de Cobro (`/Pagos/procesar.php`)**
   - **Descripción:** Modal para cobrar.
   - **Implementación:** Transacción PDO para insertar en `pagos` y actualizar `consultas.estado_pago = 'pagado'`.
-- [ ] **6.3. Dashboard y Exportación (`/Reportes/index.php`)**
+- [x] **6.3. Dashboard y Exportación (`/Reportes/index.php`)**
   - **Descripción:** Panel financiero.
-  - **Implementación:** Consultas de agregación SQL (`SUM()`) por día/semana/mes. Botón para exportar corte de caja a PDF con `DomPDF`.
+  - **Implementación:** Consultas de agregación SQL (`SUM()`) por día/semana/mes. Botones para exportar corte de caja a PDF con `DomPDF`.
