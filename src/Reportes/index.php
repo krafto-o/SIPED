@@ -25,6 +25,7 @@ $pagosRecientes = obtenerPagosRecientes($db);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= generarTokenCSRF() ?>">
     <title>SIPED - Reportes</title>
     <link rel="stylesheet" href="/css/estilos.css">
 </head>
@@ -35,6 +36,7 @@ $pagosRecientes = obtenerPagosRecientes($db);
             <a href="/Pagos/index" class="btn btn-outline btn-sm">Caja de Cobro</a>
             <span><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']) ?> - <?= ucfirst($usuario['rol']) ?></span>
             <form action="/Reportes/index" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="cerrar_sesion" value="1">
                 <button type="submit" class="btn btn-outline btn-sm">Cerrar sesion</button>
             </form>
@@ -66,10 +68,12 @@ $pagosRecientes = obtenerPagosRecientes($db);
 
         <div class="export-actions">
             <form action="/Reportes/exportar" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="rango" value="dia">
                 <button type="submit" class="btn btn-primary btn-sm">Exportar Corte del Dia</button>
             </form>
             <form action="/Reportes/exportar" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="rango" value="mes">
                 <button type="submit" class="btn btn-primary btn-sm">Exportar Reporte Mensual</button>
             </form>

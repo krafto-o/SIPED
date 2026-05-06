@@ -10,6 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+if (!validarTokenCSRF($_POST['csrf_token'] ?? '')) {
+    $_SESSION['error_pago'] = 'Solicitud no valida';
+    header('Location: /Pagos/index');
+    exit;
+}
+regenerarTokenCSRF();
+
 $idConsulta = filter_input(INPUT_POST, 'id_consulta', FILTER_VALIDATE_INT);
 $monto = filter_input(INPUT_POST, 'monto', FILTER_VALIDATE_FLOAT);
 $formaPago = $_POST['forma_pago'] ?? '';

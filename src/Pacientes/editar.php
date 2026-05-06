@@ -32,6 +32,11 @@ $errorMensaje = '';
 $exitoMensaje = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar_paciente'])) {
+    if (!validarTokenCSRF($_POST['csrf_token'] ?? '')) {
+        $errorMensaje = 'Solicitud no valida.';
+    } else {
+        regenerarTokenCSRF();
+
     $nombre = trim($_POST['nombre'] ?? '');
     $apellidos = trim($_POST['apellidos'] ?? '');
     $fechaNacimiento = trim($_POST['fecha_nacimiento'] ?? '');
@@ -60,6 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['actualizar_paciente']
         } else {
             $errorMensaje = 'Error al actualizar los datos.';
         }
+    }
     }
 }
 
@@ -94,6 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agregar_tutor_existen
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['dar_baja'])) {
+    if (!validarTokenCSRF($_POST['csrf_token'] ?? '')) {
+        $errorMensaje = 'Solicitud no valida.';
+    } else {
+        regenerarTokenCSRF();
+
     $confirmacion = $_POST['confirmacion_baja'] ?? '';
     if ($confirmacion === 'BAJA') {
         $exito = darBajaPaciente($db, $idPaciente);
@@ -105,6 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['dar_baja'])) {
         }
     } else {
         $errorMensaje = 'Debe escribir BAJA para confirmar.';
+    }
     }
 }
 
@@ -122,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_tutor_editar']
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= generarTokenCSRF() ?>">
     <title>SIPED - Editar Paciente</title>
     <link rel="stylesheet" href="/css/estilos.css">
 </head>
@@ -131,6 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_tutor_editar']
         <div class="navbar-user">
             <span><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']) ?> - <?= ucfirst($usuario['rol']) ?></span>
             <form action="/Pacientes/editar" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="cerrar_sesion" value="1">
                 <button type="submit" class="btn btn-outline btn-sm">Cerrar sesion</button>
             </form>
@@ -142,8 +156,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_tutor_editar']
             <h1>Editar Paciente</h1>
             <div class="flex gap-sm">
                 <form action="/Pacientes/perfil" method="POST" style="display:inline;">
+                    <?= campoCSRF() ?>
                     <input type="hidden" name="id_paciente" value="<?= $idPaciente ?>">
-                    <button type="submit" class="btn btn-outline btn-sm">Ver Perfil</button>
+                    <button type="submit" class="btn btn-outline btn-sm">Volver al Perfil</button>
                 </form>
                 <a href="/Pacientes/index" class="btn btn-outline btn-sm">Volver al listado</a>
             </div>
@@ -158,7 +173,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_tutor_editar']
         <?php endif; ?>
 
         <form method="POST" action="/Pacientes/editar">
+            <?= campoCSRF() ?>
             <input type="hidden" name="id_paciente" value="<?= $idPaciente ?>">
+            <input type="hidden" name="actualizar_paciente" value="1">
 
             <div class="card mb-lg">
                 <div class="card-header">
@@ -257,7 +274,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_tutor_editar']
                         <h3>Vincular Tutor Existente</h3>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="/Pacientes/editar">
+        <form method="POST" action="/Pacientes/editar">
+            <?= campoCSRF() ?>
+            <input type="hidden" name="actualizar_paciente" value="1">
                             <input type="hidden" name="id_paciente" value="<?= $idPaciente ?>">
                             <div class="search-bar">
                                 <input type="text" name="termino_tutor_editar" class="form-input" placeholder="Buscar por nombre o telefono...">
@@ -267,7 +286,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_tutor_editar']
 
                         <?php if (!empty($resultadosBusquedaTutores)): ?>
                             <form method="POST" action="/Pacientes/editar" class="mt-md">
+                                <?= campoCSRF() ?>
                                 <input type="hidden" name="id_paciente" value="<?= $idPaciente ?>">
+                                <input type="hidden" name="vincular_tutor" value="1">
                                 <div class="form-group">
                                     <label class="form-label">Seleccionar Tutor</label>
                                     <select name="id_tutor" class="form-input" required>
@@ -299,7 +320,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_tutor_editar']
                 <h3>Dar de Baja al Paciente</h3>
                 <p class="text-muted mb-md">Esta accion desactivara al paciente del sistema. No se eliminan los datos, pero no aparecera en los listados.</p>
                 <form method="POST" action="/Pacientes/editar">
+                    <?= campoCSRF() ?>
                     <input type="hidden" name="id_paciente" value="<?= $idPaciente ?>">
+                    <input type="hidden" name="dar_baja" value="1">
                     <div class="form-group">
                         <label class="form-label" for="confirmacion_baja">Escriba <strong>BAJA</strong> para confirmar</label>
                         <input type="text" id="confirmacion_baja" name="confirmacion_baja" class="form-input" required>

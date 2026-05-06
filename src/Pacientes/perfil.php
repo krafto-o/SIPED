@@ -44,6 +44,7 @@ $vacunasAtrasadas = $esPediatra ? calcularVacunasPendientes($db, $idPaciente) : 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= generarTokenCSRF() ?>">
     <title>SIPED - Perfil del Paciente</title>
     <link rel="stylesheet" href="/css/estilos.css">
 </head>
@@ -53,6 +54,7 @@ $vacunasAtrasadas = $esPediatra ? calcularVacunasPendientes($db, $idPaciente) : 
         <div class="navbar-user">
             <span><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']) ?> - <?= ucfirst($usuario['rol']) ?></span>
             <form action="/Pacientes/perfil" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="cerrar_sesion" value="1">
                 <button type="submit" class="btn btn-outline btn-sm">Cerrar sesion</button>
             </form>
@@ -64,6 +66,7 @@ $vacunasAtrasadas = $esPediatra ? calcularVacunasPendientes($db, $idPaciente) : 
             <h1>Perfil del Paciente</h1>
             <div class="flex gap-sm">
                 <form action="/Pacientes/editar" method="POST" style="display:inline;">
+                    <?= campoCSRF() ?>
                     <input type="hidden" name="id_paciente" value="<?= $idPaciente ?>">
                     <button type="submit" class="btn btn-primary btn-sm">Editar</button>
                 </form>
@@ -264,6 +267,7 @@ $vacunasAtrasadas = $esPediatra ? calcularVacunasPendientes($db, $idPaciente) : 
                     <div class="card-header">
                         <h2>Cartilla de Vacunas</h2>
                         <form action="/Vacunas/aplicar" method="POST" style="display:inline;">
+                            <?= campoCSRF() ?>
                             <input type="hidden" name="id_paciente" value="<?= $idPaciente ?>">
                             <button type="submit" class="btn btn-primary btn-sm">Registrar Nueva Vacuna</button>
                         </form>
@@ -352,10 +356,11 @@ $vacunasAtrasadas = $esPediatra ? calcularVacunasPendientes($db, $idPaciente) : 
                     btnOriginal.disabled = true;
                     btnOriginal.textContent = 'Generando...';
 
+                    var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                     fetch('/Consultas/api_receta', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id_consulta: idConsulta, id_cita: idCita })
+                        body: JSON.stringify({ id_consulta: idConsulta, id_cita: idCita, csrf_token: csrfToken })
                     })
                     .then(function(r) { return r.json(); })
                     .then(function(resp) {

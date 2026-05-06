@@ -12,6 +12,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+if (!validarTokenCSRF($_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+    http_response_code(403);
+    echo json_encode(['exito' => false, 'error' => 'Solicitud no valida']);
+    exit;
+}
+
 if (!isset($_FILES['archivo']) || !isset($_POST['id_cita']) || !isset($_POST['id_paciente'])) {
     http_response_code(400);
     echo json_encode(['exito' => false, 'error' => 'Datos incompletos']);

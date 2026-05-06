@@ -10,6 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+if (!validarTokenCSRF($_POST['csrf_token'] ?? '')) {
+    $_SESSION['error_cita'] = 'Solicitud no valida';
+    header('Location: /Agenda/index');
+    exit;
+}
+regenerarTokenCSRF();
+
 $idCita = $_POST['id_cita'] ?? null;
 $accion = $_POST['accion'] ?? null;
 

@@ -25,6 +25,7 @@ unset($_SESSION['success_pago'], $_SESSION['error_pago']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= generarTokenCSRF() ?>">
     <title>SIPED - Caja de Cobro</title>
     <link rel="stylesheet" href="/css/estilos.css">
 </head>
@@ -35,6 +36,7 @@ unset($_SESSION['success_pago'], $_SESSION['error_pago']);
             <a href="/Reportes/index" class="btn btn-outline btn-sm">Reportes</a>
             <span><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']) ?> - <?= ucfirst($usuario['rol']) ?></span>
             <form action="/Pagos/index" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="cerrar_sesion" value="1">
                 <button type="submit" class="btn btn-outline btn-sm">Cerrar sesion</button>
             </form>
@@ -112,6 +114,7 @@ unset($_SESSION['success_pago'], $_SESSION['error_pago']);
                 <button type="button" class="modal-close" id="btnCerrarModal">&times;</button>
             </div>
             <form action="/Pagos/procesar" method="POST">
+                <?= campoCSRF() ?>
                 <div class="modal-body">
                     <div class="info-grid mb-md">
                         <div class="info-item">

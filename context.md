@@ -143,6 +143,7 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | `src/Reportes/exportar.php` | 6 | Handler POST para exportar corte a PDF con descarga forzada |
 | `src/plantillas/reporte_corte/default.php` | 6 | Plantilla HTML/CSS para PDF de reporte de corte con tabla y firma |
 | `src/tests/Integration/PagosTest.php` | 6 | 13 pruebas de pagos (pendientes, filtro rol, registro, validaciones, detalle) |
+| `src/Pacientes/buscar_tutores.php` | C | Endpoint AJAX POST para busqueda de tutores existentes (JSON) |
 
 ## Archivos Modificados
 
@@ -167,6 +168,30 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 | `src/css/estilos.css` | Fase 6: +60 lineas: `.metric-card`, `.badge-pagado`, `.badge-pendiente-pago`, `.export-actions`, `.firma-linea` |
 | `src/Dashboard/pediatra.php` | Fase 6: Agregado boton "Caja de Cobro" en quick-actions |
 | `src/Agenda/index.php` | Fase 6: Agregado enlace "Caja de Cobro" en navbar |
+| `src/funciones/pacientes.php` | Envueltas 12 funciones en `function_exists()` + nueva funcion `buscarPacientesPorTermino()` |
+| `src/funciones/citas.php` | Envueltas 8 funciones en `function_exists()` + nueva funcion `obtenerCitasHoyPorMedico()` |
+| `src/funciones/consultas.php` | Envueltas 13 funciones en `function_exists()` |
+| `src/funciones/auth.php` | Agregadas funciones CSRF: `generarTokenCSRF()`, `validarTokenCSRF()`, `regenerarTokenCSRF()`, `campoCSRF()` |
+| `src/Dashboard/pediatra.php` | Reemplazadas queries directas por funciones de capa de negocio + tokens CSRF |
+| `src/Pacientes/nuevo.php` | Modal de busqueda de tutores convertido a AJAX + tokens CSRF |
+| `src/Pacientes/editar.php` | Tokens CSRF en handlers y formularios |
+| `src/Pacientes/perfil.php` | Tokens CSRF en formularios + CSRF en fetch de receta |
+| `src/Pacientes/index.php` | Tokens CSRF en formularios |
+| `src/Agenda/index.php` | Tokens CSRF en formularios + CSRF en fetch de detalle cita |
+| `src/Agenda/crear.php` | Tokens CSRF + CSRF en fetch de buscar pacientes |
+| `src/Agenda/gestionar_cita.php` | Validacion CSRF en handler |
+| `src/Agenda/api_detalle_cita.php` | Validacion CSRF |
+| `src/Agenda/buscar_pacientes.php` | Validacion CSRF |
+| `src/Consultas/iniciar.php` | Tokens CSRF + CSRF en fetches (borrador, finalizar, subir archivo) |
+| `src/Consultas/api_borrador.php` | Validacion CSRF |
+| `src/Consultas/api_finalizar.php` | Validacion CSRF |
+| `src/Consultas/api_subir_archivo.php` | Validacion CSRF |
+| `src/Consultas/api_receta.php` | Validacion CSRF |
+| `src/Vacunas/aplicar.php` | Tokens CSRF + validacion en handler |
+| `src/Pagos/index.php` | Tokens CSRF en formularios |
+| `src/Pagos/procesar.php` | Validacion CSRF en handler |
+| `src/Reportes/index.php` | Tokens CSRF en formularios |
+| `src/Reportes/exportar.php` | Validacion CSRF en handler |
 
 ## Archivos Eliminados
 
@@ -203,6 +228,10 @@ El agente utilizo los siguientes archivos `.md` del raiz del proyecto para enten
 24. **`obtenerVacunasPaciente()` no retornaba `id_vacuna`**: El JOIN no incluia la columna `va.id_vacuna`, causando `Undefined array key` en `calcularVacunasPendientes()`. Solucion: agregar `va.id_vacuna` al SELECT.
 25. **`parsearEsquemaEdadMeses()` regex incorrecto**: El patron de anos capturaba antes que el de rangos. Solucion: mover el regex de rango `(\d+)-(\d+)\s*mes` antes del de anos.
 26. **`ConsultasTest` flaky por citas residuales**: Las citas de `CitasTest` no se limpiaban entre clases de prueba, causando conflictos de double-booking en `setUpBeforeClass` de `ConsultasTest`. Solucion: agregar `DELETE FROM citas WHERE id_usuario = ?` antes de crear la cita de prueba.
+27. **Funciones sin proteccion `function_exists()`**: `pacientes.php`, `citas.php`, `consultas.php` no tenian proteccion contra redeclaracion. Solucion: envolver TODAS las funciones en `if (!function_exists())`.
+28. **Queries SQL directos en vistas**: `pediatra.php` usaba `ejecutarConsulta()` directamente. Solucion: crear funciones de capa de negocio `obtenerCitasHoyPorMedico()` y `buscarPacientesPorTermino()`.
+29. **Busqueda de tutores con recarga de pagina**: El modal de buscar tutor en `nuevo.php` usaba un form POST que recargaba la pagina. Solucion: convertir a AJAX con fetch POST a `/Pacientes/buscar_tutores.php` con debounce 300ms.
+30. **Sin proteccion CSRF**: Ningun formulario POST tenia validacion CSRF. Solucion: agregar funciones `generarTokenCSRF()`, `validarTokenCSRF()`, `regenerarTokenCSRF()`, `campoCSRF()` en `auth.php` y aplicar en todos los handlers y formularios.
 
 ## Estado del Entorno
 
@@ -282,6 +311,9 @@ Esto crea ambas BDs (`siped` y `siped_test`) con tablas, seeders y datos de prue
 - **Transacciones anidadas detectadas**: `registrarVacuna()` verifica `$db->inTransaction()` antes de iniciar para evitar conflictos con tests.
 - **Checkbox toggle en JS vanilla**: Al marcar `aplicada_externamente`, se deshabilita el input de lote y se remueve `required`.
 - **Alerta minimalista en banner**: Solo muestra conteo de vacunas pendientes; el detalle completo (nombre + esquema) se muestra dentro de la pestana Vacunas.
+- **CSRF Protection**: Todos los formularios POST incluyen token CSRF generado por sesion, validado en handlers. Endpoints AJAX envian token via campo `csrf_token` en JSON/FormData o header `X-CSRF-Token`.
+- **Capa de abstraccion en vistas**: Las vistas no usan `ejecutarConsulta()` ni `obtenerDatos()` directamente; todas las queries estan encapsuladas en funciones de capa de negocio (`obtenerCitasHoyPorMedico()`, `buscarPacientesPorTermino()`).
+- **Busqueda AJAX de tutores**: Modal de busqueda de tutores existentes en `nuevo.php` usa fetch POST con debounce 300ms al endpoint `/Pacientes/buscar_tutores.php`.
 
 ## Estado del Proyecto
 
@@ -292,3 +324,7 @@ Todas las fases (0-6) estan completadas. El sistema cuenta con:
 - Consultas medicas con borradores, recetas PDF y archivos adjuntos
 - Cartilla digital de vacunas con alertas
 - Caja de cobro y dashboard de reportes con exportacion PDF
+- Proteccion CSRF en todos los formularios y endpoints AJAX
+- Funciones protegidas contra redeclaracion en todos los archivos de funciones
+- Capa de abstraccion completa: vistas sin queries SQL directos
+- Busqueda AJAX de tutores existentes con debounce

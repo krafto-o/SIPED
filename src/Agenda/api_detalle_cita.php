@@ -12,6 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+if (!validarTokenCSRF($_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) {
+    echo json_encode(['error' => 'Solicitud no valida']);
+    exit;
+}
+
 $idCita = $_POST['id_cita'] ?? null;
 
 if (!$idCita) {

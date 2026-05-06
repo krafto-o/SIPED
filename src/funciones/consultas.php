@@ -4,6 +4,7 @@ require_once __DIR__ . '/Funciones_SQL.php';
 require_once __DIR__ . '/citas.php';
 require_once __DIR__ . '/pacientes.php';
 
+if (!function_exists('obtenerDatosConsulta')) {
 function obtenerDatosConsulta(PDO $db, int $idCita, int $idUsuario): ?array
 {
     $citas = ejecutarConsulta(
@@ -25,7 +26,9 @@ function obtenerDatosConsulta(PDO $db, int $idCita, int $idUsuario): ?array
 
     return $citas[0];
 }
+}
 
+if (!function_exists('obtenerHistorialPaciente')) {
 function obtenerHistorialPaciente(PDO $db, int $idPaciente): array
 {
     $consultasPrevias = ejecutarConsulta(
@@ -41,7 +44,9 @@ function obtenerHistorialPaciente(PDO $db, int $idPaciente): array
 
     return $consultasPrevias;
 }
+}
 
+if (!function_exists('guardarBorrador')) {
 function guardarBorrador(PDO $db, int $idCita, int $idUsuario, array $datos): bool
 {
     $datosJson = json_encode($datos, JSON_UNESCAPED_UNICODE);
@@ -69,7 +74,9 @@ function guardarBorrador(PDO $db, int $idCita, int $idUsuario, array $datos): bo
         'datos_json' => $datosJson
     ]);
 }
+}
 
+if (!function_exists('obtenerBorrador')) {
 function obtenerBorrador(PDO $db, int $idCita, int $idUsuario): ?array
 {
     $resultado = obtenerDatos(
@@ -85,12 +92,16 @@ function obtenerBorrador(PDO $db, int $idCita, int $idUsuario): ?array
 
     return json_decode($resultado[0]['datos_json'], true);
 }
+}
 
+if (!function_exists('eliminarBorrador')) {
 function eliminarBorrador(PDO $db, int $idCita, int $idUsuario): bool
 {
     return eliminarRegistro($db, 'borradores_consultas', 'id_cita = ? AND id_usuario = ?', [$idCita, $idUsuario]);
 }
+}
 
+if (!function_exists('finalizarConsulta')) {
 function finalizarConsulta(PDO $db, int $idCita, array $datosConsulta, array $tratamientos, array $archivosAdjuntos = [], int $idUsuario = null, bool $eliminarBorrador = false, bool $generarReceta = false): array
 {
     $transaccionActiva = $db->inTransaction();
@@ -188,7 +199,9 @@ function finalizarConsulta(PDO $db, int $idCita, array $datosConsulta, array $tr
         return ['exito' => false, 'error' => 'Error interno al finalizar consulta'];
     }
 }
+}
 
+if (!function_exists('guardarArchivoTemporal')) {
 function guardarArchivoTemporal(int $idCita, int $idPaciente, array $archivo): array
 {
     $extensionesPermitidas = ['pdf', 'jpg', 'jpeg', 'png'];
@@ -201,7 +214,7 @@ function guardarArchivoTemporal(int $idCita, int $idPaciente, array $archivo): a
     }
 
     if ($archivo['size'] > $tamanoMaximo) {
-        return ['exito' => false, 'error' => 'El archivo excede el tamaño maximo de 5MB'];
+        return ['exito' => false, 'error' => 'El archivo excede el tamano maximo de 5MB'];
     }
 
     $directorio = __DIR__ . '/../../storage/pacientes/temp/' . $idCita;
@@ -221,7 +234,9 @@ function guardarArchivoTemporal(int $idCita, int $idPaciente, array $archivo): a
 
     return ['exito' => true, 'nombre_original' => $archivo['name'], 'ruta' => $rutaRelativa, 'extension' => $extension];
 }
+}
 
+if (!function_exists('registrarArchivosAdjuntos')) {
 function registrarArchivosAdjuntos(PDO $db, int $idCita, int $idConsulta, array $archivos): void
 {
     $citas = obtenerDatos($db, 'citas', 'id_cita = ?', [$idCita]);
@@ -259,7 +274,9 @@ function registrarArchivosAdjuntos(PDO $db, int $idCita, int $idConsulta, array 
         ]);
     }
 }
+}
 
+if (!function_exists('limpiarRecetasViejas')) {
 function limpiarRecetasViejas(string $ruta, int $dias = 7): int
 {
     $contador = 0;
@@ -280,7 +297,9 @@ function limpiarRecetasViejas(string $ruta, int $dias = 7): int
 
     return $contador;
 }
+}
 
+if (!function_exists('limpiarArchivosTemporales')) {
 function limpiarArchivosTemporales(string $rutaBase, int $horas = 24): int
 {
     $contador = 0;
@@ -305,7 +324,9 @@ function limpiarArchivosTemporales(string $rutaBase, int $horas = 24): int
 
     return $contador;
 }
+}
 
+if (!function_exists('obtenerOGenerarReceta')) {
 function obtenerOGenerarReceta(PDO $db, int $idConsulta, int $idCita): array
 {
     $directorio = __DIR__ . '/../../storage/recetas_temporales';
@@ -322,7 +343,9 @@ function obtenerOGenerarReceta(PDO $db, int $idConsulta, int $idCita): array
 
     return generarRecetaPDF($db, $idConsulta, $idCita);
 }
+}
 
+if (!function_exists('generarRecetaPDF')) {
 function generarRecetaPDF(PDO $db, int $idConsulta, int $idCita): array
 {
     require_once __DIR__ . '/../vendor/autoload.php';
@@ -417,11 +440,14 @@ function generarRecetaPDF(PDO $db, int $idConsulta, int $idCita): array
         return ['exito' => false, 'error' => 'Error al generar la receta PDF'];
     }
 }
+}
 
+if (!function_exists('renderizarPlantilla')) {
 function renderizarPlantilla(string $ruta, array $vars): string
 {
     extract($vars);
     ob_start();
     require $ruta;
     return ob_get_clean();
+}
 }

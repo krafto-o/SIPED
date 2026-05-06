@@ -23,6 +23,7 @@ $pacientes = listarPacientes($db, $termino);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= generarTokenCSRF() ?>">
     <title>SIPED - Pacientes</title>
     <link rel="stylesheet" href="/css/estilos.css">
 </head>
@@ -32,6 +33,7 @@ $pacientes = listarPacientes($db, $termino);
         <div class="navbar-user">
             <span><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']) ?> - <?= ucfirst($usuario['rol']) ?></span>
             <form action="/Pacientes/index" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="cerrar_sesion" value="1">
                 <button type="submit" class="btn btn-outline btn-sm">Cerrar sesion</button>
             </form>
@@ -45,6 +47,7 @@ $pacientes = listarPacientes($db, $termino);
         </div>
 
         <form method="POST" action="/Pacientes/index">
+            <?= campoCSRF() ?>
             <div class="search-bar">
                 <input
                     type="text"
@@ -86,10 +89,12 @@ $pacientes = listarPacientes($db, $termino);
                                         <td>
                                             <div class="flex gap-sm">
                                                 <form action="/Pacientes/perfil" method="POST" style="display:inline;">
+                                                    <?= campoCSRF() ?>
                                                     <input type="hidden" name="id_paciente" value="<?= (int) $paciente['id_paciente'] ?>">
                                                     <button type="submit" class="btn btn-outline btn-sm">Ver Perfil</button>
                                                 </form>
                                                 <form action="/Pacientes/editar" method="POST" style="display:inline;">
+                                                    <?= campoCSRF() ?>
                                                     <input type="hidden" name="id_paciente" value="<?= (int) $paciente['id_paciente'] ?>">
                                                     <button type="submit" class="btn btn-primary btn-sm">Editar</button>
                                                 </form>

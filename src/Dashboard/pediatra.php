@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../funciones/auth.php';
+require_once __DIR__ . '/../funciones/citas.php';
+require_once __DIR__ . '/../funciones/pacientes.php';
 
 requerirRol(['pediatra']);
 
@@ -13,18 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cerrar_sesion'])) {
 $db = conectar();
 $usuario = usuarioAutenticado();
 
-$hoy = date('Y-m-d');
-
-$citasHoy = ejecutarConsulta(
-    $db,
-    "SELECT c.id_cita, c.fecha_hora, c.tipo_cita, c.estado,
-            p.nombre AS paciente_nombre, p.apellidos AS paciente_apellidos
-     FROM citas c
-     INNER JOIN paciente p ON c.id_paciente = p.id_paciente
-     WHERE c.id_usuario = ? AND DATE(c.fecha_hora) = ?
-     ORDER BY c.fecha_hora ASC",
-    [$_SESSION['id_usuario'], $hoy]
-);
+$citasHoy = obtenerCitasHoyPorMedico($db, $_SESSION['id_usuario']);
 
 $busquedaError = '';
 $resultadosBusqueda = [];
@@ -33,16 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_paciente'])) {
     $termino = trim($_POST['termino_busqueda'] ?? '');
 
     if (!empty($termino)) {
-        $resultadosBusqueda = ejecutarConsulta(
-            $db,
-            "SELECT id_paciente, nombre, apellidos, fecha_nacimiento
-             FROM paciente
-             WHERE estado = 'activo'
-             AND (nombre LIKE ? OR apellidos LIKE ?)
-             ORDER BY nombre ASC
-             LIMIT 10",
-            ["%{$termino}%", "%{$termino}%"]
-        );
+        $resultadosBusqueda = buscarPacientesPorTermino($db, $termino);
 
         if (empty($resultadosBusqueda)) {
             $busquedaError = 'No se encontraron pacientes con ese nombre.';
@@ -56,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_paciente'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= generarTokenCSRF() ?>">
     <title>SIPED - Dashboard</title>
     <link rel="stylesheet" href="/css/estilos.css">
 </head>
@@ -66,6 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_paciente'])) {
             <a href="/Pacientes/index" class="btn btn-outline btn-sm">Pacientes</a>
             <span><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']) ?></span>
             <form action="/Dashboard/pediatra" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="cerrar_sesion" value="1">
                 <button type="submit" class="btn btn-outline btn-sm">Cerrar sesión</button>
             </form>
@@ -116,6 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_paciente'])) {
                                         <td>
                                             <?php if ($cita['estado'] !== 'cancelada' && $cita['estado'] !== 'realizada'): ?>
                                                 <form action="/Consultas/iniciar" method="POST" style="display:inline;">
+                                                    <?= campoCSRF() ?>
                                                     <input type="hidden" name="id_cita" value="<?= (int) $cita['id_cita'] ?>">
                                                     <button type="submit" class="btn btn-primary btn-sm">Atender</button>
                                                 </form>
@@ -138,6 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_paciente'])) {
             </div>
             <div class="card-body">
                 <form method="POST" action="/Dashboard/pediatra">
+                    <?= campoCSRF() ?>
                     <div class="search-bar">
                         <input
                             type="text"
@@ -171,6 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buscar_paciente'])) {
                                         <td><?= date('d/m/Y', strtotime($paciente['fecha_nacimiento'])) ?></td>
                                         <td>
                                             <form action="/Pacientes/perfil" method="POST" style="display:inline;">
+                                                <?= campoCSRF() ?>
                                                 <input type="hidden" name="id_paciente" value="<?= (int) $paciente['id_paciente'] ?>">
                                                 <button type="submit" class="btn btn-outline btn-sm">Ver Perfil</button>
                                             </form>

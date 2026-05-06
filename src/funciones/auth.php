@@ -91,3 +91,38 @@ function usuarioAutenticado(): array
         'apellidos' => $_SESSION['apellidos'] ?? null,
     ];
 }
+
+if (!function_exists('generarTokenCSRF')) {
+function generarTokenCSRF(): string
+{
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+}
+
+if (!function_exists('validarTokenCSRF')) {
+function validarTokenCSRF(?string $token): bool
+{
+    if (empty($token) || empty($_SESSION['csrf_token'])) {
+        return false;
+    }
+    return hash_equals($_SESSION['csrf_token'], $token);
+}
+}
+
+if (!function_exists('regenerarTokenCSRF')) {
+function regenerarTokenCSRF(): void
+{
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+}
+
+if (!function_exists('campoCSRF')) {
+function campoCSRF(): string
+{
+    $token = generarTokenCSRF();
+    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars($token) . '">';
+}
+}

@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/Funciones_SQL.php';
 
+if (!function_exists('calcularEdad')) {
 function calcularEdad($fechaNacimiento): string
 {
     $fechaNac = new DateTime($fechaNacimiento);
@@ -23,7 +24,9 @@ function calcularEdad($fechaNacimiento): string
 
     return $anios . ' año' . ($anios > 1 ? 's' : '');
 }
+}
 
+if (!function_exists('validarDuplicadoPaciente')) {
 function validarDuplicadoPaciente(PDO $db, $nombre, $apellidos, $fechaNacimiento): bool
 {
     $resultado = obtenerDatos(
@@ -35,7 +38,9 @@ function validarDuplicadoPaciente(PDO $db, $nombre, $apellidos, $fechaNacimiento
 
     return !empty($resultado);
 }
+}
 
+if (!function_exists('registrarPacienteConTutores')) {
 function registrarPacienteConTutores(PDO $db, array $datosPaciente, array $tutores): bool
 {
     $transaccionActiva = $db->inTransaction();
@@ -109,7 +114,9 @@ function registrarPacienteConTutores(PDO $db, array $datosPaciente, array $tutor
         return false;
     }
 }
+}
 
+if (!function_exists('obtenerPacienteConTutores')) {
 function obtenerPacienteConTutores(PDO $db, int $idPaciente): ?array
 {
     $pacientes = obtenerDatos($db, 'paciente', 'id_paciente = ? AND estado = ?', [$idPaciente, 'activo']);
@@ -134,7 +141,9 @@ function obtenerPacienteConTutores(PDO $db, int $idPaciente): ?array
 
     return $paciente;
 }
+}
 
+if (!function_exists('obtenerPacienteCompleto')) {
 function obtenerPacienteCompleto(PDO $db, int $idPaciente): ?array
 {
     $pacientes = obtenerDatos($db, 'paciente', 'id_paciente = ? AND estado = ?', [$idPaciente, 'activo']);
@@ -159,17 +168,23 @@ function obtenerPacienteCompleto(PDO $db, int $idPaciente): ?array
 
     return $paciente;
 }
+}
 
+if (!function_exists('darBajaPaciente')) {
 function darBajaPaciente(PDO $db, int $idPaciente): bool
 {
     return actualizarDatos($db, 'paciente', ['estado' => 'inactivo'], 'id_paciente = :id_paciente', ['id_paciente' => $idPaciente]);
 }
+}
 
+if (!function_exists('desvincularTutor')) {
 function desvincularTutor(PDO $db, int $idPaciente, int $idTutor): bool
 {
     return eliminarRegistro($db, 'paciente_tutor', 'id_paciente = ? AND id_tutor = ?', [$idPaciente, $idTutor]);
 }
+}
 
+if (!function_exists('buscarTutores')) {
 function buscarTutores(PDO $db, string $termino): array
 {
     return ejecutarConsulta(
@@ -183,7 +198,9 @@ function buscarTutores(PDO $db, string $termino): array
         ["%{$termino}%", "%{$termino}%", "%{$termino}%"]
     );
 }
+}
 
+if (!function_exists('listarPacientes')) {
 function listarPacientes(PDO $db, string $termino = ''): array
 {
     if (!empty($termino)) {
@@ -200,12 +217,16 @@ function listarPacientes(PDO $db, string $termino = ''): array
 
     return obtenerDatos($db, 'paciente', "estado = 'activo'", [], 'nombre ASC');
 }
+}
 
+if (!function_exists('actualizarPaciente')) {
 function actualizarPaciente(PDO $db, int $idPaciente, array $datos): bool
 {
     return actualizarDatos($db, 'paciente', $datos, 'id_paciente = :id_paciente', ['id_paciente' => $idPaciente]);
 }
+}
 
+if (!function_exists('vincularTutorAPaciente')) {
 function vincularTutorAPaciente(PDO $db, int $idPaciente, int $idTutor, string $parentesco): bool
 {
     return insertarDatos($db, 'paciente_tutor', [
@@ -214,7 +235,9 @@ function vincularTutorAPaciente(PDO $db, int $idPaciente, int $idTutor, string $
         'parentesco' => $parentesco,
     ]);
 }
+}
 
+if (!function_exists('obtenerCitasPaciente')) {
 function obtenerCitasPaciente(PDO $db, int $idPaciente): array
 {
     return ejecutarConsulta(
@@ -227,4 +250,21 @@ function obtenerCitasPaciente(PDO $db, int $idPaciente): array
          ORDER BY c.fecha_hora DESC",
         [$idPaciente]
     );
+}
+}
+
+if (!function_exists('buscarPacientesPorTermino')) {
+function buscarPacientesPorTermino(PDO $db, string $termino, int $limite = 10): array
+{
+    return ejecutarConsulta(
+        $db,
+        "SELECT id_paciente, nombre, apellidos, fecha_nacimiento
+         FROM paciente
+         WHERE estado = 'activo'
+         AND (LOWER(nombre) LIKE LOWER(?) OR LOWER(apellidos) LIKE LOWER(?))
+         ORDER BY nombre ASC
+         LIMIT ?",
+        ["%{$termino}%", "%{$termino}%", $limite]
+    );
+}
 }

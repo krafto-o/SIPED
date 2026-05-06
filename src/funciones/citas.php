@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/Funciones_SQL.php';
 
+if (!function_exists('calcularDuracionCita')) {
 function calcularDuracionCita(PDO $db, string $tipoCita): int
 {
     if ($tipoCita === 'primera_vez') {
@@ -24,7 +25,9 @@ function calcularDuracionCita(PDO $db, string $tipoCita): int
 
     return 30;
 }
+}
 
+if (!function_exists('verificarDisponibilidad')) {
 function verificarDisponibilidad(PDO $db, int $idUsuario, string $fechaInicio, string $fechaFin): bool
 {
     $resultado = ejecutarConsulta(
@@ -42,7 +45,9 @@ function verificarDisponibilidad(PDO $db, int $idUsuario, string $fechaInicio, s
 
     return (int) $resultado[0]['total'] === 0;
 }
+}
 
+if (!function_exists('agendarCita')) {
 function agendarCita(PDO $db, int $idPaciente, int $idUsuario, string $fechaHora, string $tipoCita, string $motivo = null): array
 {
     $transaccionActiva = $db->inTransaction();
@@ -99,7 +104,9 @@ function agendarCita(PDO $db, int $idPaciente, int $idUsuario, string $fechaHora
         return ['exito' => false, 'error' => 'Error interno al agendar'];
     }
 }
+}
 
+if (!function_exists('obtenerCitasCalendario')) {
 function obtenerCitasCalendario(PDO $db, string $fechaInicio, string $fechaFin, int $idUsuario = null, string $rol = null): array
 {
     if ($rol === 'pediatra' && $idUsuario !== null) {
@@ -165,7 +172,9 @@ function obtenerCitasCalendario(PDO $db, string $fechaInicio, string $fechaFin, 
 
     return $eventos;
 }
+}
 
+if (!function_exists('obtenerDetalleCita')) {
 function obtenerDetalleCita(PDO $db, int $idCita): ?array
 {
     $citas = ejecutarConsulta(
@@ -201,7 +210,9 @@ function obtenerDetalleCita(PDO $db, int $idCita): ?array
 
     return $cita;
 }
+}
 
+if (!function_exists('cambiarEstadoCita')) {
 function cambiarEstadoCita(PDO $db, int $idCita, string $nuevoEstado): bool
 {
     $estadosValidos = ['pendiente', 'confirmada', 'cancelada', 'realizada'];
@@ -212,12 +223,16 @@ function cambiarEstadoCita(PDO $db, int $idCita, string $nuevoEstado): bool
 
     return actualizarDatos($db, 'citas', ['estado' => $nuevoEstado], 'id_cita = :id_cita', ['id_cita' => $idCita]);
 }
+}
 
+if (!function_exists('listarPediatras')) {
 function listarPediatras(PDO $db): array
 {
     return obtenerDatos($db, 'usuarios', "rol = 'pediatra' AND estado = 'activo'", [], 'nombre ASC');
 }
+}
 
+if (!function_exists('buscarPacientesParaCita')) {
 function buscarPacientesParaCita(PDO $db, string $termino): array
 {
     return ejecutarConsulta(
@@ -230,4 +245,22 @@ function buscarPacientesParaCita(PDO $db, string $termino): array
          LIMIT 15",
         ["%{$termino}%", "%{$termino}%"]
     );
+}
+}
+
+if (!function_exists('obtenerCitasHoyPorMedico')) {
+function obtenerCitasHoyPorMedico(PDO $db, int $idUsuario): array
+{
+    $hoy = date('Y-m-d');
+    return ejecutarConsulta(
+        $db,
+        "SELECT c.id_cita, c.fecha_hora, c.tipo_cita, c.estado,
+                p.nombre AS paciente_nombre, p.apellidos AS paciente_apellidos
+         FROM citas c
+         INNER JOIN paciente p ON c.id_paciente = p.id_paciente
+         WHERE c.id_usuario = ? AND DATE(c.fecha_hora) = ?
+         ORDER BY c.fecha_hora ASC",
+        [$idUsuario, $hoy]
+    );
+}
 }

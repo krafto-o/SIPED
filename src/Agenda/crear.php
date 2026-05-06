@@ -50,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agendar_cita'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= generarTokenCSRF() ?>">
     <title>SIPED - Agendar Cita</title>
     <link rel="stylesheet" href="/css/estilos.css">
 </head>
@@ -60,6 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agendar_cita'])) {
             <a href="/Agenda/index" class="btn btn-outline btn-sm">Volver al calendario</a>
             <span><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']) ?> - <?= ucfirst($usuario['rol']) ?></span>
             <form action="/Agenda/crear" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="cerrar_sesion" value="1">
                 <button type="submit" class="btn btn-outline btn-sm">Cerrar sesion</button>
             </form>
@@ -89,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agendar_cita'])) {
 
         <div class="card">
             <form action="/Agenda/crear" method="POST" id="formCita">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="agendar_cita" value="1">
                 <input type="hidden" name="id_paciente" id="id_paciente" value="">
 
@@ -158,10 +161,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['agendar_cita'])) {
             }
 
             debounceTimer = setTimeout(function() {
+                var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
                 fetch('/Agenda/buscar_pacientes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ termino: termino })
+                    body: JSON.stringify({ termino: termino, csrf_token: csrfToken })
                 })
                 .then(function(response) { return response.json(); })
                 .then(function(pacientes) {

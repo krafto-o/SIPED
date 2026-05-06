@@ -14,6 +14,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $input = json_decode(file_get_contents('php://input'), true);
 
+$tokenCSRF = $input['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+if (!validarTokenCSRF($tokenCSRF)) {
+    http_response_code(403);
+    echo json_encode(['exito' => false, 'error' => 'Solicitud no valida']);
+    exit;
+}
+
 if (!$input || !isset($input['id_consulta']) || !isset($input['id_cita'])) {
     http_response_code(400);
     echo json_encode(['exito' => false, 'error' => 'Datos incompletos']);

@@ -10,6 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+if (!validarTokenCSRF($_POST['csrf_token'] ?? '')) {
+    $_SESSION['error_reporte'] = 'Solicitud no valida';
+    header('Location: /Reportes/index');
+    exit;
+}
+regenerarTokenCSRF();
+
 $rango = $_POST['rango'] ?? '';
 
 $hoy = date('Y-m-d');

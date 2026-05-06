@@ -37,6 +37,7 @@ $mensajeExito = '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= generarTokenCSRF() ?>">
     <title>SIPED - Consulta: <?= htmlspecialchars($datosConsulta['paciente_nombre'] . ' ' . $datosConsulta['paciente_apellidos']) ?></title>
     <link rel="stylesheet" href="/css/estilos.css">
 </head>
@@ -47,6 +48,7 @@ $mensajeExito = '';
             <span class="text-sm text-muted">Consulta activa</span>
             <span><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']) ?></span>
             <form action="/Dashboard/pediatra" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="cerrar_sesion" value="1">
                 <button type="submit" class="btn btn-outline btn-sm">Cerrar sesion</button>
             </form>
@@ -367,6 +369,8 @@ $mensajeExito = '';
             }
         });
 
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
         function recolectarDatos() {
             const datos = {
                 peso: document.getElementById('peso').value,
@@ -407,7 +411,7 @@ $mensajeExito = '';
             fetch('/Consultas/api_borrador', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id_cita: idCita, datos: datos })
+                body: JSON.stringify({ id_cita: idCita, datos: datos, csrf_token: csrfToken })
             })
             .then(function(r) { return r.json(); })
             .then(function(resp) {
@@ -479,6 +483,7 @@ $mensajeExito = '';
             formData.append('archivo', file);
             formData.append('id_cita', idCita);
             formData.append('id_paciente', idPaciente);
+            formData.append('csrf_token', csrfToken);
 
             const itemArchivo = document.createElement('div');
             itemArchivo.className = 'archivo-item';
@@ -524,7 +529,8 @@ $mensajeExito = '';
                     id_cita: idCita,
                     consulta: datos,
                     tratamientos: datos.tratamientos,
-                    archivos: archivosSubidos
+                    archivos: archivosSubidos,
+                    csrf_token: csrfToken
                 })
             })
             .then(function(r) { return r.json(); })

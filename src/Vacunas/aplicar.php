@@ -31,6 +31,11 @@ $errores = [];
 $exito = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registrar_vacuna'])) {
+    if (!validarTokenCSRF($_POST['csrf_token'] ?? '')) {
+        $errores[] = 'Solicitud no valida.';
+    } else {
+        regenerarTokenCSRF();
+
     $idVacuna = isset($_POST['id_vacuna']) ? (int) $_POST['id_vacuna'] : 0;
     $fechaAplicacion = $_POST['fecha_aplicacion'] ?? '';
     $aplicadaExterna = isset($_POST['aplicada_externamente']);
@@ -66,6 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['registrar_vacuna'])) 
             }
         }
     }
+    }
 }
 
 $vacunasCatalogo = obtenerVacunasCatalogo($db);
@@ -77,6 +83,7 @@ $edad = calcularEdad($paciente['fecha_nacimiento']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= generarTokenCSRF() ?>">
     <title>SIPED - Registrar Vacuna</title>
     <link rel="stylesheet" href="/css/estilos.css">
 </head>
@@ -86,6 +93,7 @@ $edad = calcularEdad($paciente['fecha_nacimiento']);
         <div class="navbar-user">
             <span><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']) ?> - <?= ucfirst($usuario['rol']) ?></span>
             <form action="/Vacunas/aplicar" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="cerrar_sesion" value="1">
                 <button type="submit" class="btn btn-outline btn-sm">Cerrar sesion</button>
             </form>
@@ -134,6 +142,7 @@ $edad = calcularEdad($paciente['fecha_nacimiento']);
             </div>
             <div class="card-body">
                 <form action="/Vacunas/aplicar" method="POST" id="formVacuna">
+                    <?= campoCSRF() ?>
                     <input type="hidden" name="id_paciente" value="<?= $idPaciente ?>">
                     <input type="hidden" name="registrar_vacuna" value="1">
 
@@ -174,6 +183,7 @@ $edad = calcularEdad($paciente['fecha_nacimiento']);
                     </div>
                 </form>
                 <form action="/Pacientes/perfil" method="POST" style="margin-top: var(--spacing-md);">
+                    <?= campoCSRF() ?>
                     <input type="hidden" name="id_paciente" value="<?= $idPaciente ?>">
                     <button type="submit" class="btn btn-outline">Cancelar</button>
                 </form>

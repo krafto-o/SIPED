@@ -23,6 +23,7 @@ unset($_SESSION['success_cita'], $_SESSION['error_cita']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= generarTokenCSRF() ?>">
     <title>SIPED - Agenda</title>
     <link rel="stylesheet" href="/css/estilos.css">
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
@@ -36,6 +37,7 @@ unset($_SESSION['success_cita'], $_SESSION['error_cita']);
             <a href="/Agenda/crear" class="btn btn-primary btn-sm">Nueva Cita</a>
             <span><?= htmlspecialchars($usuario['nombre'] . ' ' . $usuario['apellidos']) ?> - <?= ucfirst($usuario['rol']) ?></span>
             <form action="/Agenda/index" method="POST" style="display:inline;">
+                <?= campoCSRF() ?>
                 <input type="hidden" name="cerrar_sesion" value="1">
                 <button type="submit" class="btn btn-outline btn-sm">Cerrar sesion</button>
             </form>
@@ -67,11 +69,13 @@ unset($_SESSION['success_cita'], $_SESSION['error_cita']);
             </div>
             <div class="modal-footer" id="modalAcciones" style="display: none;">
                 <form action="/Agenda/gestionar_cita" method="POST" style="display: inline;">
+                    <?= campoCSRF() ?>
                     <input type="hidden" name="id_cita" id="modalIdCita">
                     <input type="hidden" name="accion" id="modalAccion">
                     <button type="submit" class="btn btn-secondary btn-sm" id="btnConfirmar">Confirmar Cita</button>
                 </form>
                 <form action="/Agenda/gestionar_cita" method="POST" style="display: inline;">
+                    <?= campoCSRF() ?>
                     <input type="hidden" name="id_cita" id="modalIdCitaCancelar">
                     <input type="hidden" name="accion" value="cancelar">
                     <button type="submit" class="btn btn-danger btn-sm">Cancelar Cita</button>
@@ -122,7 +126,7 @@ unset($_SESSION['success_cita'], $_SESSION['error_cita']);
                 fetch('/Agenda/api_detalle_cita', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: 'id_cita=' + encodeURIComponent(idCita)
+                    body: 'id_cita=' + encodeURIComponent(idCita) + '&csrf_token=' + encodeURIComponent(document.querySelector('meta[name="csrf-token"]').getAttribute('content'))
                 })
                 .then(function(response) { return response.json(); })
                 .then(function(data) {

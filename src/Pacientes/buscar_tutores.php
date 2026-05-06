@@ -1,14 +1,13 @@
 <?php
 
 require_once __DIR__ . '/../funciones/auth.php';
-require_once __DIR__ . '/../funciones/citas.php';
+require_once __DIR__ . '/../funciones/pacientes.php';
 
 requerirRol(['recepcionista', 'pediatra']);
 
-header('Content-Type: application/json');
-
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode([]);
+    http_response_code(405);
+    echo json_encode(['error' => 'Metodo no permitido']);
     exit;
 }
 
@@ -21,14 +20,20 @@ if (!validarTokenCSRF($tokenCSRF)) {
     exit;
 }
 
-$termino = $input['termino'] ?? '';
-
-if (empty($termino) || strlen($termino) < 2) {
-    echo json_encode([]);
+if (!$input || empty($input['termino'])) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Termino de busqueda requerido']);
     exit;
 }
 
 $db = conectar();
-$pacientes = buscarPacientesParaCita($db, $termino);
+$termino = trim($input['termino']);
 
-echo json_encode($pacientes);
+if (strlen($termino) < 2) {
+    echo json_encode([]);
+    exit;
+}
+
+$tutores = buscarTutores($db, $termino);
+
+echo json_encode($tutores);

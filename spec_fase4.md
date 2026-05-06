@@ -38,3 +38,5 @@ El agente debe asumir que el esquema ya existe.
 - **Diseño del PDF:** Membrete simulado, datos del doctor, fecha, datos del niño, diagnóstico y el listado de `tratamientos`. Espacio para firma.
 - **Gestión de Archivos de Recetas:** Guardar en `/storage/recetas_temporales/`. Las recetas con más de 7 días se eliminarán (crear función de limpieza). Si se pide una receta antigua, generarla al vuelo.
 - **Seguridad Subida de Archivos:** Guardar los estudios de lab en `/storage/pacientes/{id}/` (fuera del acceso público web). Crear script `/Consultas/ver_archivo.php` que valide sesión antes de servir el archivo.
+
+> **Nota de implementación:** El endpoint de finalización se implementó como `/Consultas/api_finalizar.php` (API JSON) en lugar de `/Consultas/finalizar.php` (página HTML) para soportar el flujo AJAX del formulario de consulta con autoguardado. La lógica es idéntica a la especificada.
